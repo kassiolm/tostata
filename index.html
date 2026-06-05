@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tostata — Gestão de Fichas Técnicas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="toast"></div>
+
+<nav class="topbar">
+  <div class="logo">🍕 Tosta<span>ta</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="goPage('dashboard')">Dashboard</button>
+    <button class="nav-tab" onclick="goPage('fichas')">Fichas <span class="badge-count" id="badge-fichas">0</span></button>
+    <button class="nav-tab" onclick="goPage('insumos')">Insumos <span class="badge-count" id="badge-insumos" style="display:none">0</span></button>
+    <button class="nav-tab" onclick="goPage('precificador')">Precificador</button>
+  </div>
+  <div class="topbar-actions">
+    <button class="topbar-btn" onclick="document.getElementById('csv-input').click()" title="Importar dados do CSV">📄</button>
+    <button class="topbar-btn" onclick="importarDados()" title="Importar dados de arquivo JSON">📂</button>
+    <button class="topbar-btn" onclick="exportarDados()" title="Exportar dados para arquivo JSON">💾</button>
+  </div>
+</nav>
+<input type="file" id="file-input" accept=".json" style="display:none" onchange="carregarArquivo(event)">
+<input type="file" id="csv-input" accept=".csv" style="display:none" onchange="importarCSV(event)">
+
+<div class="main">
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div class="dash-header">
+      <h1>Visão Geral</h1>
+      <p>Resumo do cardápio e saúde financeira dos produtos</p>
+    </div>
+    <div class="kpi-grid" id="kpi-grid"></div>
+    <div class="dash-grid">
+      <div class="card">
+        <h3>Ranking por margem de lucro</h3>
+        <div class="produto-rank" id="rank-margem"></div>
+      </div>
+      <div class="card">
+        <h3>Status CMV por produto</h3>
+        <div class="status-list" id="status-cmv"></div>
+      </div>
+    </div>
+    <div class="card" id="alerta-estoque-card" style="display:none">
+      <h3>🔔 Alertas de Estoque</h3>
+      <div class="status-list" id="alerta-estoque"></div>
+    </div>
+  </div>
+
+  <!-- FICHAS -->
+  <div class="page" id="page-fichas">
+    <div class="fichas-header">
+      <h2>Fichas Técnicas</h2>
+      <div class="search-bar">
+        <input type="text" id="search-input" placeholder="Buscar produto..." oninput="renderFichas()">
+        <button class="filter-btn active" id="f-todos" onclick="setFiltro('todos')">Todos</button>
+        <button class="filter-btn" id="f-pizza" onclick="setFiltro('pizza')">Pizzas</button>
+        <button class="filter-btn" id="f-panuozzo" onclick="setFiltro('panuozzo')">Panuozzos</button>
+        <button class="filter-btn" id="f-napolidog" onclick="setFiltro('napolidog')">Napolidogs</button>
+      </div>
+    </div>
+    <div class="fichas-grid" id="fichas-grid"></div>
+  </div>
+
+  <!-- INSUMOS -->
+  <div class="page" id="page-insumos">
+    <div class="ins-header">
+      <h2>Insumos e Estoque</h2>
+      <div style="display:flex;gap:8px">
+        <button class="btn-primary" onclick="abrirModalInsumo(null)">+ Novo Insumo</button>
+      </div>
+    </div>
+    <div class="ins-resumo" id="ins-resumo"></div>
+    <div class="stock-table-wrap">
+      <div class="search-bar">
+        <input type="text" id="ins-search" placeholder="Buscar insumo..." oninput="renderInsumos()">
+        <button class="filter-btn active" id="ins-f-todos" onclick="setFiltroInsumo('todos')">Todos</button>
+        <button class="filter-btn" id="ins-f-massas" onclick="setFiltroInsumo('massas')">Massas</button>
+        <button class="filter-btn" id="ins-f-queijos" onclick="setFiltroInsumo('queijos')">Queijos</button>
+        <button class="filter-btn" id="ins-f-embutidos" onclick="setFiltroInsumo('embutidos')">Embutidos</button>
+        <button class="filter-btn" id="ins-f-vegetais" onclick="setFiltroInsumo('vegetais')">Vegetais</button>
+        <button class="filter-btn" id="ins-f-molhos" onclick="setFiltroInsumo('molhos')">Molhos</button>
+        <button class="filter-btn" id="ins-f-embalagens" onclick="setFiltroInsumo('embalagens')">Embalagens</button>
+      </div>
+      <table class="stock-table">
+        <thead><tr>
+          <th>Insumo</th><th>Categoria</th><th>Un</th><th>Estoque</th><th>Mínimo</th><th>Custo Médio</th><th>Status</th><th style="text-align:right">Ações</th>
+        </tr></thead>
+        <tbody id="ins-tbody"></tbody>
+      </table>
+      <div class="ins-empty" id="ins-empty" style="display:none">Nenhum insumo encontrado.</div>
+    </div>
+  </div>
+
+  <!-- PRECIFICADOR -->
+  <div class="page" id="page-precificador">
+    <h2 class="prec-h2">Precificador</h2>
+    <div class="precif-layout">
+      <div>
+        <div class="card" style="margin-bottom:1rem">
+          <h3>Dados do produto</h3>
+          <div class="form-group">
+            <label class="form-label">Nome do produto</label>
+            <input class="form-input" id="p-nome" placeholder="Ex: Pizza Especial da Casa" oninput="calcPrec()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Categoria</label>
+            <select class="form-input" id="p-cat" onchange="calcPrec()">
+              <option value="pizza">Pizza</option>
+              <option value="panuozzo">Panuozzo</option>
+              <option value="napolidog">Napolidog</option>
+            </select>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:1rem">
+          <h3>Ingredientes</h3>
+          <div class="ing-add-row">
+            <input class="form-input" id="ing-nome" placeholder="Ingrediente" style="font-size:13px;padding:8px 12px" onkeypress="if(event.key==='Enter')addIng()">
+            <input class="form-input qty" id="ing-qtd" type="number" placeholder="g/un" style="font-size:13px;padding:8px 12px" onkeypress="if(event.key==='Enter')addIng()">
+            <input class="form-input custo" id="ing-custo" type="number" step="0.0001" placeholder="R$/g" style="font-size:13px;padding:8px 12px" onkeypress="if(event.key==='Enter')addIng()">
+            <button class="btn-add" onclick="addIng()">+</button>
+          </div>
+          <div class="ing-list" id="ing-list"></div>
+        </div>
+        <div class="card">
+          <h3>Parâmetros</h3>
+          <div class="form-group">
+            <label class="form-label">Embalagem (R$)</label>
+            <input class="form-input" id="p-embal" type="number" step="0.01" value="3.95" oninput="calcPrec()" style="max-width:160px">
+          </div>
+          <div class="slider-row">
+            <label>% Custos Operacionais <span id="op-pct-val">15%</span></label>
+            <input type="range" min="0" max="50" step="1" value="15" id="op-pct" oninput="document.getElementById('op-pct-val').textContent=this.value+'%';calcPrec()">
+          </div>
+          <div class="prec-input-row">
+            <label>Preço de Venda (R$)</label>
+            <input type="number" id="p-preco" value="75" oninput="calcPrec()">
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="result-card">
+          <h3>Resultado da Precificação</h3>
+          <div class="result-line"><span>Subtotal ingredientes</span><span id="r-ing">R$ 0,00</span></div>
+          <div class="result-line"><span>Embalagem</span><span id="r-emb">R$ 0,00</span></div>
+          <div class="result-line"><span>Total insumos</span><span id="r-ins">R$ 0,00</span></div>
+          <div class="result-line"><span>Custos operacionais</span><span id="r-op">R$ 0,00</span></div>
+          <div class="result-line total"><span>Custo total de produção</span><span id="r-prod">R$ 0,00</span></div>
+          <div class="result-big">
+            <div class="rbl">Margem de Lucro</div>
+            <div class="rbv" id="r-margem">—</div>
+          </div>
+          <div class="result-line"><span>Lucro por unidade</span><span id="r-lucro" style="font-weight:600">R$ 0,00</span></div>
+          <div class="result-line"><span>CMV</span><span id="r-cmv">0%</span></div>
+          <div class="result-line"><span>Status</span><span id="r-status">—</span></div>
+          <button class="btn-full" onclick="salvarPrec()">Salvar como Ficha Técnica</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL FICHA -->
+<div class="modal-overlay" id="modal-overlay" onclick="fecharModal(event)">
+  <div class="modal" id="modal-content">
+    <div class="modal-header">
+      <div>
+        <div class="modal-cat" id="m-cat"></div>
+        <div class="modal-nome" id="m-nome"></div>
+      </div>
+      <button class="modal-close" onclick="fecharModalBtn()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-section-title">Ingredientes da receita</div>
+      <div class="table-scroll">
+      <table class="ing-table">
+        <thead><tr><th>Ingrediente</th><th style="text-align:right">Qtd</th><th style="text-align:right">Custo/un</th><th style="text-align:right">Total</th></tr></thead>
+        <tbody id="m-ings"></tbody>
+      </table>
+      </div>
+      <div class="modal-section-title" style="margin-top:1.25rem">Embalagens</div>
+      <div class="table-scroll">
+      <table class="ing-table">
+        <tbody id="m-embs"></tbody>
+      </table>
+      </div>
+      <div class="modal-section-title" style="margin-top:1.25rem">Resumo e Precificação</div>
+      <div class="resumo-grid" id="m-resumo"></div>
+      <div class="edit-preco-row">
+        <label>Ajustar Preço de Venda (R$)</label>
+        <input type="number" id="m-preco-input" step="1" onchange="atualizarPreco()">
+        <button class="btn-primary" onclick="atualizarPreco()">Atualizar</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn-primary" style="flex:1;background:var(--text)" onclick="editarProduto()">✏️ Editar no Precificador</button>
+        <button class="btn-primary" style="flex:1;background:var(--red)" onclick="excluirProduto()">🗑️ Excluir</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL INSUMO -->
+<div class="modal-overlay" id="modal-insumo" onclick="if(event.target.id==='modal-insumo'){if(insumoModo==='form')cancelarFormInsumo();else fecharModalInsumo()}">
+  <div class="modal" style="width:750px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-cat" id="mi-cat"></div>
+        <div class="modal-nome" id="mi-nome"></div>
+      </div>
+      <button class="modal-close" onclick="if(insumoModo==='form')cancelarFormInsumo();else fecharModalInsumo()">×</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- VIEW MODE -->
+      <div id="mi-view">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1rem">
+          <div class="resumo-item"><div class="resumo-label">Estoque Atual</div><div class="resumo-value" id="mi-estoque" style="font-size:1.4rem"></div></div>
+          <div class="resumo-item"><div class="resumo-label">Estoque Mínimo</div><div class="resumo-value" id="mi-min" style="font-size:1.4rem"></div></div>
+          <div class="resumo-item"><div class="resumo-label">Custo Médio (R$)</div><div class="resumo-value" id="mi-custo">—</div></div>
+          <div class="resumo-item highlight"><div class="resumo-label">Valor em Estoque</div><div class="resumo-value" id="mi-valor">—</div></div>
+        </div>
+        <div style="margin-bottom:1rem">
+          <div class="modal-section-title">Usado nos produtos</div>
+          <div class="prod-usage" id="mi-usado"></div>
+        </div>
+        <div style="margin-bottom:0.5rem;display:flex;align-items:center;justify-content:space-between">
+          <div class="modal-section-title" style="margin:0">Histórico de Compras</div>
+          <button class="btn-sm" onclick="document.getElementById('compra-form').style.display='grid'">+ Registrar Compra</button>
+        </div>
+        <div class="compra-form" id="compra-form" style="display:none">
+          <div class="form-group">
+            <label class="form-label">Fornecedor</label>
+            <input class="form-input" id="compra-forn" placeholder="Ex: Distribuidora A" style="font-size:13px">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Quantidade</label>
+            <input class="form-input" id="compra-qtd" type="number" step="0.001" placeholder="0" style="font-size:13px">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Custo Unitário (R$)</label>
+            <input class="form-input" id="compra-unit" type="number" step="0.0001" placeholder="0.00" style="font-size:13px">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Data</label>
+            <input class="form-input" id="compra-data" type="date" style="font-size:13px">
+          </div>
+          <div style="grid-column:1/-1;display:flex;gap:8px">
+            <button class="btn-sm" style="flex:1" onclick="registrarCompra()">Adicionar</button>
+            <button class="btn-sm-outline" style="flex:1" onclick="document.getElementById('compra-form').style.display='none'">Cancelar</button>
+          </div>
+        </div>
+        <div class="table-scroll">
+        <table class="ing-table" style="margin-top:8px">
+          <thead><tr><th>Data</th><th>Fornecedor</th><th style="text-align:right">Qtd</th><th style="text-align:right">Custo Unit</th><th style="text-align:right">Total</th></tr></thead>
+          <tbody id="mi-historico"></tbody>
+        </table>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)">
+          <button class="btn-primary" style="flex:1;background:var(--text)" onclick="editarInsumo()">✏️ Editar</button>
+          <button class="btn-primary" style="flex:1;background:var(--red)" onclick="excluirInsumo()">🗑️ Excluir</button>
+        </div>
+      </div>
+
+      <!-- FORM MODE (create / edit) -->
+      <div id="mi-form" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div class="form-group" style="grid-column:1/-1">
+            <label class="form-label">Nome do Insumo</label>
+            <input class="form-input" id="f-nome" placeholder="Ex: Queijo Mussarela">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Categoria</label>
+            <select class="form-input" id="f-cat">
+              <option value="massas">Massas</option>
+              <option value="queijos">Queijos</option>
+              <option value="embutidos">Embutidos</option>
+              <option value="vegetais">Vegetais</option>
+              <option value="molhos">Molhos</option>
+              <option value="temperos">Temperos</option>
+              <option value="doces">Doces</option>
+              <option value="embalagens">Embalagens</option>
+              <option value="outros">Outros</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Unidade de Medida</label>
+            <input class="form-input" id="f-un" list="f-un-list" value="g" placeholder="g, un, kg, ml...">
+            <datalist id="f-un-list"><option value="g"><option value="un"><option value="kg"><option value="ml"><option value="L"><option value="cx"></datalist>
+          </div>
+          <div class="form-group" id="f-custo-group">
+            <label class="form-label">Custo Médio (R$)</label>
+            <input class="form-input" id="f-custo" type="number" step="0.0001" placeholder="0.00" value="0">
+          </div>
+          <div class="form-group" id="f-estoque-group">
+            <label class="form-label">Estoque Inicial</label>
+            <input class="form-input" id="f-estoque" type="number" step="0.001" placeholder="0" value="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Estoque Mínimo</label>
+            <input class="form-input" id="f-min" type="number" step="0.001" placeholder="0" value="0">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border)">
+          <button class="btn-primary" style="flex:1" id="mi-salvar-btn" onclick="salvarFormInsumo()">💾 Salvar</button>
+          <button class="btn-primary" style="flex:1;background:var(--muted)" onclick="cancelarFormInsumo()">Cancelar</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="js/script.js"></script>
+</body>
+</html>
