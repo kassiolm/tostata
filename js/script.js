@@ -251,6 +251,41 @@ function toast(msg,type){
   el._t=setTimeout(()=>el.classList.remove('show'),3000);
 }
 
+function popularSelectIng(){
+  const sel = document.getElementById('ing-select');
+  if(!sel) return;
+  sel.innerHTML = '<option value="">Selecione um insumo...</option>'
+    + INGREDIENTES.map(i => `<option value="${i.id}" data-custo="${i.custoMedio}">${i.nome}</option>`).join('')
+    + '<option value="__custom__">✏️ Digitar manualmente...</option>';
+  sel.value = '';
+  sel.style.display = '';
+  const inp = document.getElementById('ing-nome');
+  if(inp){ inp.style.display = 'none'; inp.value = ''; }
+}
+function onSelectIng(){
+  const sel = document.getElementById('ing-select');
+  const inp = document.getElementById('ing-nome');
+  const custo = document.getElementById('ing-custo');
+  if(sel.value === '__custom__'){
+    sel.style.display = 'none';
+    inp.style.display = '';
+    inp.value = '';
+    inp.focus();
+    custo.value = '';
+  } else if(sel.value){
+    const opt = sel.options[sel.selectedIndex];
+    inp.style.display = 'none';
+    sel.style.display = '';
+    custo.value = opt.dataset.custo || '';
+    inp.value = opt.textContent;
+  } else {
+    inp.style.display = 'none';
+    sel.style.display = '';
+    inp.value = '';
+    custo.value = '';
+  }
+}
+
 function goPage(p){
   document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));
   document.getElementById('page-'+p).classList.add('active');
@@ -258,7 +293,7 @@ function goPage(p){
   if(p==='dashboard') renderDashboard();
   if(p==='fichas') renderFichas();
   if(p==='insumos') renderInsumos();
-  if(p==='precificador') calcPrec();
+  if(p==='precificador'){ popularSelectIng(); calcPrec(); }
 }
 
 function setFiltro(f){
@@ -387,12 +422,17 @@ function calcPrec(){
 }
 
 function addIng(){
-  const nome = document.getElementById('ing-nome').value.trim();
+  const sel = document.getElementById('ing-select');
+  const inp = document.getElementById('ing-nome');
+  const nome = (sel.style.display === 'none' ? inp.value : inp.value || sel.options[sel.selectedIndex]?.textContent || '').trim();
   const qtd = parseFloat(document.getElementById('ing-qtd').value)||0;
   const custo = parseFloat(document.getElementById('ing-custo').value)||0;
   if(!nome) return;
   ingPrecList.push({nome,qtd,custo,total:qtd*custo});
-  document.getElementById('ing-nome').value='';
+  sel.value = '';
+  sel.style.display = '';
+  inp.style.display = 'none';
+  inp.value = '';
   document.getElementById('ing-qtd').value='';
   document.getElementById('ing-custo').value='';
   calcPrec();
