@@ -566,6 +566,9 @@ function abrirModalProduto(id){
   lockScroll(true);
 }
 
+function lockScroll(lock){
+  document.body.style.overflow = lock ? 'hidden' : '';
+}
 function fecharModal(event){
   if(event.target.id==='modal-overlay'){
     document.getElementById('modal-overlay').classList.remove('open');
