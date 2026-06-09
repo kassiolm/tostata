@@ -26,6 +26,7 @@
     <button class="topbar-btn" onclick="document.getElementById('csv-input').click()" title="Importar dados do CSV">📄</button>
     <button class="topbar-btn" onclick="importarDados()" title="Importar dados de arquivo JSON">📂</button>
     <button class="topbar-btn" onclick="exportarDados()" title="Exportar dados para arquivo JSON">💾</button>
+    <span class="sync-indicator" id="sync-indicator" title="Sincronizado">☁️</span>
   </div>
 </nav>
 <input type="file" id="file-input" accept=".json" style="display:none" onchange="carregarArquivo(event)">

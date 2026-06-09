@@ -450,6 +450,8 @@ function initSupabase(){
 }
 function syncSupabase(){
   if(!_supabase) return;
+  const ind = document.getElementById('sync-indicator');
+  if(ind) ind.className = 'sync-indicator syncing';
   clearTimeout(_syncTimer);
   _syncTimer = setTimeout(async () => {
     const data = {
@@ -466,7 +468,11 @@ function syncSupabase(){
         { onConflict: 'id' }
       );
       if(error) console.warn('Supabase sync error:', error.message);
-    }catch(e){ console.warn('Supabase sync error:', e.message); }
+      const ind2 = document.getElementById('sync-indicator');
+      if(ind2) ind2.className = 'sync-indicator';
+    }catch(e){ console.warn('Supabase sync error:', e.message);
+      const ind2 = document.getElementById('sync-indicator');
+      if(ind2) ind2.className = 'sync-indicator'; }
   }, 1000);
 }
 async function carregarSupabase(){
@@ -1643,6 +1649,7 @@ function uploadLogo(ev){
       try{
         localStorage.setItem('tostata_logo', c.toDataURL('image/png'));
         carregarLogo();
+        syncSupabase();
         toast('Logo atualizada!','ok');
       }catch(err){ toast('Erro ao salvar logo: '+err.message,''); }
     };
@@ -1668,6 +1675,7 @@ function resetarLogo(){
   if(!confirm('Restaurar logo padrão?')) return;
   localStorage.removeItem('tostata_logo');
   carregarLogo();
+  syncSupabase();
   toast('Logo restaurada','ok');
 }
 
