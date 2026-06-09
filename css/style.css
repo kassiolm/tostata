@@ -32,14 +32,14 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 100px;
+    height: 72px;
     position: sticky;
     top: 0;
     z-index: 100;
   }
   .logo {
     font-family: 'DM Serif Display', serif;
-    font-size: 2rem;
+    font-size: 1.5rem;
     letter-spacing: 0.04em;
     color: #F5F2EB;
     cursor: pointer;
@@ -322,13 +322,13 @@
     .dash-grid { grid-template-columns: 1fr; }
     .fichas-grid { grid-template-columns: 1fr; }
     .precif-layout { grid-template-columns: 1fr; }
-    .topbar { padding: 0 0.75rem; flex-wrap: nowrap; height: 72px; gap: 4px; overflow-x: auto; }
-    .topbar .logo { font-size: 1.5rem; white-space: nowrap; }
+    .topbar { padding: 0 0.75rem; flex-wrap: nowrap; height: 56px; gap: 4px; overflow-x: auto; }
+    .topbar .logo { font-size: 1.1rem; white-space: nowrap; }
     .topbar-actions { gap: 2px; }
     .topbar-btn { padding: 6px 8px; font-size: 15px; min-width: 36px; min-height: 36px; }
     .main { padding: 1rem; }
     .page.active { padding-bottom: 80px; }
-    .logo { font-size: 1.5rem; }
+    .logo { font-size: 1.1rem; }
     .nav-tabs { flex-shrink: 0; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }
     .nav-tabs::-webkit-scrollbar { display: none; }
     .nav-tab { padding: 8px 12px; font-size: 12px; white-space: nowrap; min-height: 36px; }
@@ -371,8 +371,8 @@
   @media (max-width: 480px) {
     .kpi-grid { grid-template-columns: 1fr 1fr; gap: 0.5rem; }
     .ins-resumo { grid-template-columns: 1fr 1fr; gap: 0.5rem; }
-    .topbar { padding: 0 0.5rem; height: 64px; }
-    .topbar .logo { font-size: 1.3rem; }
+    .topbar { padding: 0 0.5rem; height: 50px; }
+    .topbar .logo { font-size: 0.95rem; }
     .nav-tab { padding: 6px 8px; font-size: 11px; }
     .topbar-btn { padding: 4px 6px; font-size: 13px; min-width: 32px; min-height: 32px; }
     .main { padding: 0.75rem; }
