@@ -237,6 +237,7 @@
 ];
 let filtroAtual = 'todos';
 let produtoAtual = null;
+let produtoEditandoId = null;
 let ingPrecList = [];
 
 function br(v){return typeof v==='number'?'R$ '+v.toFixed(2).replace('.',','):'R$ 0,00';}
@@ -293,7 +294,7 @@ function goPage(p){
   if(p==='dashboard') renderDashboard();
   if(p==='fichas') renderFichas();
   if(p==='insumos') renderInsumos();
-  if(p==='precificador'){ popularSelectIng(); calcPrec(); }
+  if(p==='precificador'){ produtoEditandoId = null; popularSelectIng(); calcPrec(); }
   if(p==='vendas') renderVendas();
 }
 
@@ -495,20 +496,37 @@ function salvarPrec(){
     return {nome:i.nome,qtd:i.qtd,unit:un,custoUnit:i.custo,total:+(i.qtd*i.custo).toFixed(2)};
   });
   const subIng = ingredients.reduce((s,i)=>s+i.total,0);
-  const id = Date.now();
-  const prod = {
-    id, nome, cat,
-    ingredientes: ingredients,
-    embalagens: [{nome:'Embalagem',qtd:1,custoUnit:emb,total:emb}],
-    subIngredientes: subIng,
-    subEmbalagens: emb,
-    totalInsumos: subIng+emb,
-    pctOp: opPct, custoOp: 0, custoProducao: 0,
-    precoVenda: preco, cmv: 0, lucro: 0, margem: 0
-  };
-  recalcularProduto(prod);
-  PRODUTOS.push(prod);
+  const editando = produtoEditandoId && PRODUTOS.some(p=>p.id===produtoEditandoId);
+  if(editando){
+    const prod = PRODUTOS.find(p=>p.id===produtoEditandoId);
+    prod.nome = nome; prod.cat = cat;
+    prod.ingredientes = ingredients;
+    prod.embalagens = [{nome:'Embalagem',qtd:1,custoUnit:emb,total:emb}];
+    prod.subIngredientes = subIng;
+    prod.subEmbalagens = emb;
+    prod.totalInsumos = subIng+emb;
+    prod.pctOp = opPct; prod.custoOp = 0; prod.custoProducao = 0;
+    prod.precoVenda = preco; prod.cmv = 0; prod.lucro = 0; prod.margem = 0;
+    recalcularProduto(prod);
+    toast(`"${nome}" atualizada!`,'ok');
+  } else {
+    const id = Date.now();
+    const prod = {
+      id, nome, cat,
+      ingredientes: ingredients,
+      embalagens: [{nome:'Embalagem',qtd:1,custoUnit:emb,total:emb}],
+      subIngredientes: subIng,
+      subEmbalagens: emb,
+      totalInsumos: subIng+emb,
+      pctOp: opPct, custoOp: 0, custoProducao: 0,
+      precoVenda: preco, cmv: 0, lucro: 0, margem: 0
+    };
+    recalcularProduto(prod);
+    PRODUTOS.push(prod);
+    toast(`"${nome}" salva como ficha técnica!`,'ok');
+  }
   salvarDados();
+  produtoEditandoId = null;
   ingPrecList = [];
   document.getElementById('p-nome').value='';
   document.getElementById('p-embal').value='3.95';
@@ -518,7 +536,6 @@ function salvarPrec(){
   renderFichas();
   renderDashboard();
   calcPrec();
-  toast(`"${nome}" salva como ficha técnica!`,'ok');
 }
 
 function abrirModalProduto(id){
@@ -553,11 +570,13 @@ function fecharModal(event){
   if(event.target.id==='modal-overlay'){
     document.getElementById('modal-overlay').classList.remove('open');
     lockScroll(false);
+    produtoAtual = null;
   }
 }
 function fecharModalBtn(){
   document.getElementById('modal-overlay').classList.remove('open');
   lockScroll(false);
+  produtoAtual = null;
 }
 
 function atualizarPreco(){
@@ -584,6 +603,7 @@ function editarProduto(){
   ingPrecList = (produtoAtual.ingredientes||[]).map(i=>({nome:i.nome,qtd:i.qtd,custo:i.custoUnit,total:i.total}));
   fecharModalBtn();
   goPage('precificador');
+  produtoEditandoId = produtoAtual.id;
   calcPrec();
 }
 
