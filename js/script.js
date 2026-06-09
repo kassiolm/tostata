@@ -1224,7 +1224,8 @@ function renderVendas(){
   const hoje = new Date().toISOString().slice(0,10);
   document.getElementById('vf-data').value = hoje;
   const wk = getWeek(hoje);
-  document.getElementById('graf-semana').value = wk;
+  document.getElementById('graf-semana-de').value = wk;
+  document.getElementById('graf-semana-ate').value = wk;
   renderKPIVendas();
   renderTabelaVendas();
   renderGraficoSemanal();
@@ -1327,14 +1328,14 @@ function renderGraficoSemanal(){
   const empty = document.getElementById('chart-empty');
   if(!canvas) return;
   const ctx = canvas.getContext('2d');
-  const weekVal = document.getElementById('graf-semana').value;
-  if(!weekVal){ if(empty) empty.style.display=''; ctx.clearRect(0,0,canvas.width,canvas.height); return; }
-  const [year,wn] = weekVal.split('-W').map(Number);
-  const dias = VENDAS.filter(v => {
+  const semanaDe = document.getElementById('graf-semana-de').value;
+  const semanaAte = document.getElementById('graf-semana-ate').value;
+  if(!semanaDe || !semanaAte){ if(empty) empty.style.display=''; ctx.clearRect(0,0,canvas.width,canvas.height); return; }
+  const vendas = VENDAS.filter(v => {
     const w = getWeek(v.data);
-    return w === weekVal;
+    return w >= semanaDe && w <= semanaAte;
   });
-  if(!dias.length){
+  if(!vendas.length){
     if(empty) empty.style.display='';
     ctx.clearRect(0,0,canvas.width,canvas.height);
     return;
@@ -1346,11 +1347,19 @@ function renderGraficoSemanal(){
   const cw = W - pad.l - pad.r;
   const ch = H - pad.t - pad.b;
   ctx.clearRect(0,0,W,H);
-  const max = Math.max(...dias.map(d=>d.receitaBruta),1)*1.15;
-  const nomes = [...new Set(dias.map(d=>d.data))].sort();
-  const gap = 4;
-  const bw = Math.min((cw - gap*(nomes.length-1))/nomes.length, 80);
-  const totalW = nomes.length*bw + (nomes.length-1)*gap;
+  // group by week
+  const semanas = {};
+  vendas.forEach(v => {
+    const w = getWeek(v.data);
+    if(!semanas[w]) semanas[w] = {rec:0,ret:0};
+    semanas[w].rec += v.receitaBruta;
+    semanas[w].ret += v.retornoLiquido;
+  });
+  const keys = Object.keys(semanas).sort();
+  const max = Math.max(...keys.map(k=>semanas[k].rec),1)*1.15;
+  const gap = 6;
+  const bw = Math.min((cw - gap*(keys.length-1))/keys.length, 100);
+  const totalW = keys.length*bw + (keys.length-1)*gap;
   const xOff = pad.l + (cw - totalW)/2;
   // grid lines
   ctx.strokeStyle = '#D9D0C0';
@@ -1363,25 +1372,29 @@ function renderGraficoSemanal(){
     ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(W-pad.r,y); ctx.stroke();
     ctx.fillText('R$ '+(max*i/4).toFixed(0), pad.l-4, y+4);
   }
-  nomes.forEach((d,i) => {
-    const vs = dias.filter(x=>x.data===d);
-    const rec = vs.reduce((s,x)=>s+x.receitaBruta,0);
-    const ret = vs.reduce((s,x)=>s+x.retornoLiquido,0);
+  keys.forEach((k,i) => {
+    const d = semanas[k];
     const x = xOff + i*(bw+gap);
-    const h1 = (rec/max)*ch;
-    const h2 = (ret/max)*ch;
+    const hRec = (d.rec/max)*ch;
+    const hRet = (d.ret/max)*ch;
     // Receita bar
     ctx.fillStyle = '#5C6B46';
-    ctx.fillRect(x, pad.t+ch-h1, bw/2-1, h1);
+    ctx.fillRect(x, pad.t+ch-hRec, bw/2-1, hRec);
     // Retorno bar
     ctx.fillStyle = '#B83A00';
-    ctx.fillRect(x+bw/2+1, pad.t+ch-h2, bw/2-1, h2);
-    // Labels
+    ctx.fillRect(x+bw/2+1, pad.t+ch-hRet, bw/2-1, hRet);
+    // week label
     ctx.fillStyle = '#7A6B5D';
     ctx.textAlign = 'center';
     ctx.font = '10px DM Sans, sans-serif';
-    const parts = d.split('-');
-    ctx.fillText(parts[2]+'/'+parts[1], x+bw/2, pad.t+ch+16);
+    ctx.fillText(k.replace(/^\d+-W/,'S'), x+bw/2, pad.t+ch+16);
+    // value labels
+    ctx.font = '9px DM Sans, sans-serif';
+    ctx.fillStyle = '#5C6B46';
+    ctx.fillText('R$'+d.rec.toFixed(0), x+bw/4, pad.t+ch-hRec-4);
+    ctx.fillStyle = '#B83A00';
+    ctx.fillText('R$'+d.ret.toFixed(0), x+bw*3/4, pad.t+ch-hRet-4);
+    ctx.font = '11px DM Sans, sans-serif';
   });
 }
 

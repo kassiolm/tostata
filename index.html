@@ -204,10 +204,12 @@
     </div>
 
     <div class="card" style="margin-bottom:1.5rem">
-      <h3>Gráfico Semanal</h3>
+      <h3>Gráfico por Período</h3>
       <div style="display:flex;gap:12px;align-items:center;margin-bottom:1rem;flex-wrap:wrap">
-        <label style="font-size:12px;font-weight:600;color:var(--muted)">Período:</label>
-        <input type="week" id="graf-semana" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px" onchange="renderGraficoSemanal()">
+        <label style="font-size:12px;font-weight:600;color:var(--muted)">De:</label>
+        <input type="week" id="graf-semana-de" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px" onchange="renderGraficoSemanal()">
+        <label style="font-size:12px;font-weight:600;color:var(--muted)">Até:</label>
+        <input type="week" id="graf-semana-ate" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px" onchange="renderGraficoSemanal()">
       </div>
       <div class="chart-wrap">
         <canvas id="graf-canvas" height="280"></canvas>
