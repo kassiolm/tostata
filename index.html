@@ -13,7 +13,7 @@
 <div id="toast"></div>
 
 <nav class="topbar">
-  <div class="logo">🍕 Tosta<span>ta</span></div>
+  <div class="logo" id="logo-area" onclick="document.getElementById('logo-input').click()" title="Clique para alterar a logo">🍕 Tosta<span>ta</span></div>
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="goPage('dashboard')">Dashboard</button>
     <button class="nav-tab" onclick="goPage('fichas')">Fichas <span class="badge-count" id="badge-fichas">0</span></button>
@@ -22,6 +22,7 @@
     <button class="nav-tab" onclick="goPage('vendas')">Vendas</button>
   </div>
   <div class="topbar-actions">
+    <button class="topbar-btn" id="logo-reset-btn" onclick="resetarLogo()" title="Restaurar logo padrão" style="display:none">↺</button>
     <button class="topbar-btn" onclick="document.getElementById('csv-input').click()" title="Importar dados do CSV">📄</button>
     <button class="topbar-btn" onclick="importarDados()" title="Importar dados de arquivo JSON">📂</button>
     <button class="topbar-btn" onclick="exportarDados()" title="Exportar dados para arquivo JSON">💾</button>
@@ -29,6 +30,7 @@
 </nav>
 <input type="file" id="file-input" accept=".json" style="display:none" onchange="carregarArquivo(event)">
 <input type="file" id="csv-input" accept=".csv" style="display:none" onchange="importarCSV(event)">
+<input type="file" id="logo-input" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="uploadLogo(event)">
 
 <div class="main">
 

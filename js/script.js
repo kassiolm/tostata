@@ -1384,6 +1384,54 @@ function parseCSV(text){
   return prods;
 }
 
+// ==================== LOGO ====================
+function uploadLogo(ev){
+  const file = ev.target.files[0];
+  if(!file) return;
+  if(!file.type.startsWith('image/')) return toast('Selecione uma imagem','');
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const img = new Image();
+    img.onload = function(){
+      const maxW = 180, maxH = 50;
+      let w = img.width, h = img.height;
+      if(w > maxW){ h = h * maxW / w; w = maxW; }
+      if(h > maxH){ w = w * maxH / h; h = maxH; }
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      const ctx = c.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      try{
+        localStorage.setItem('tostata_logo', c.toDataURL('image/png'));
+        carregarLogo();
+        toast('Logo atualizada!','ok');
+      }catch(err){ toast('Erro ao salvar logo: '+err.message,''); }
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+  ev.target.value = '';
+}
+function carregarLogo(){
+  const area = document.getElementById('logo-area');
+  const resetBtn = document.getElementById('logo-reset-btn');
+  if(!area) return;
+  const data = localStorage.getItem('tostata_logo');
+  if(data){
+    area.innerHTML = `<img src="${data}" alt="Logo">`;
+    if(resetBtn) resetBtn.style.display = '';
+  } else {
+    area.innerHTML = '🍕 Tosta<span>ta</span>';
+    if(resetBtn) resetBtn.style.display = 'none';
+  }
+}
+function resetarLogo(){
+  if(!confirm('Restaurar logo padrão?')) return;
+  localStorage.removeItem('tostata_logo');
+  carregarLogo();
+  toast('Logo restaurada','ok');
+}
+
 // ==================== INIT ====================
 if(!carregarDados() || !PRODUTOS.length){
   PRODUTOS = PRODUTOS.map(recalcularProduto);
@@ -1395,6 +1443,7 @@ if(!carregarIngredientes() || !INGREDIENTES.length){
 }
 carregarVendas();
 carregarVendedores();
+carregarLogo();
 renderDashboard();
 renderFichas();
 renderInsumos();

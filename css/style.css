@@ -42,8 +42,15 @@
     font-size: 1.5rem;
     letter-spacing: 0.04em;
     color: #F5F2EB;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
   }
   .logo span { color: #D4835A; }
+  .logo img { max-height: 44px; width: auto; border-radius: 4px; }
+  .logo .logo-text { display: inline; }
   .nav-tabs {
     display: flex;
     gap: 0;
