@@ -1299,11 +1299,32 @@ function renderTabelaVendas(){
       <td style="text-align:right">${v.itens.reduce((s,i)=>s+i.qtd,0)}</td>
       <td style="text-align:right">${br(v.receitaBruta)}</td>
       <td style="text-align:right">${br(v.custoTotal)}</td>
+      <td style="text-align:right;color:var(--accent)">${br(v.comRestaurante+v.comVendedor)}</td>
       <td style="text-align:right;font-weight:600;color:${v.retornoLiquido>=0?'var(--green)':'var(--red)'}">${br(v.retornoLiquido)}</td>
       <td>${v.vendedorNome}</td>
-      <td style="text-align:right"><button class="stock-action-btn" onclick="excluirVenda(${v.id})">🗑️</button></td>
+      <td style="text-align:right;white-space:nowrap">
+        <button class="stock-action-btn" onclick="editarVenda(${v.id})">✏️</button>
+        <button class="stock-action-btn" onclick="excluirVenda(${v.id})">🗑️</button>
+      </td>
     </tr>
   `).join('');
+}
+function editarVenda(id){
+  const idx = VENDAS.findIndex(v=>v.id===id);
+  if(idx===-1) return;
+  const v = VENDAS[idx];
+  const item = v.itens[0];
+  document.getElementById('vf-produto').value = item.produtoId || '';
+  document.getElementById('vf-qtd').value = item.qtd;
+  document.getElementById('vf-vendedor').value = v.vendedorId || '';
+  document.getElementById('vf-data').value = v.data;
+  VENDAS.splice(idx,1);
+  salvarVendas();
+  renderVendas();
+  calcPrecoVenda();
+  document.getElementById('vf-produto').focus();
+  window.scrollTo({ top: document.querySelector('.venda-form').offsetTop - 100, behavior: 'smooth' });
+  toast('Venda carregada para edição. Ajuste e registre novamente.','ok');
 }
 function excluirVenda(id){
   if(!confirm('Excluir esta venda?')) return;
@@ -1314,9 +1335,9 @@ function excluirVenda(id){
 }
 function exportarVendasCSV(){
   if(!VENDAS.length) return toast('Nenhuma venda para exportar','');
-  let csv = 'Data,Produto(s),Qtd,Receita Bruta,Custo Total,Com.Restaurante,Com.Vendedor,Retorno Líquido,Vendedor\n';
+  let csv = 'Data,Produto(s),Qtd,Receita Bruta,Custo Insumos,Comissão,Retorno Líquido,Vendedor\n';
   VENDAS.forEach(v => {
-    csv += `${v.data},"${v.itens.map(i=>i.nome+' x'+i.qtd).join('; ')}",${v.itens.reduce((s,i)=>s+i.qtd,0)},${v.receitaBruta},${v.custoTotal},${v.comRestaurante},${v.comVendedor},${v.retornoLiquido},"${v.vendedorNome}"\n`;
+    csv += `${v.data},"${v.itens.map(i=>i.nome+' x'+i.qtd).join('; ')}",${v.itens.reduce((s,i)=>s+i.qtd,0)},${v.receitaBruta},${v.custoTotal},${+(v.comRestaurante+v.comVendedor).toFixed(2)},${v.retornoLiquido},"${v.vendedorNome}"\n`;
   });
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
