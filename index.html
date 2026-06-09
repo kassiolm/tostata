@@ -399,8 +399,14 @@
           </div>
           <div class="form-group">
             <label class="form-label">Unidade de Medida</label>
-            <input class="form-input" id="f-un" list="f-un-list" value="g" placeholder="g, un, kg, ml...">
-            <datalist id="f-un-list"><option value="g"><option value="un"><option value="kg"><option value="ml"><option value="L"><option value="cx"></datalist>
+            <select class="form-input" id="f-un">
+              <option value="g">g (grama)</option>
+              <option value="un">un (unidade)</option>
+              <option value="ml">ml (mililitro)</option>
+              <option value="kg">kg (quilo)</option>
+              <option value="L">L (litro)</option>
+              <option value="cx">cx (caixa)</option>
+            </select>
           </div>
           <div class="form-group" id="f-custo-group">
             <label class="form-label">Custo Médio (R$)</label>
