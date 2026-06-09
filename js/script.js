@@ -1052,17 +1052,22 @@ function popularSelectVendedor(){
 function calcPrecoVenda(){
   const sel = document.getElementById('vf-produto');
   const qtd = parseFloat(document.getElementById('vf-qtd').value)||1;
+  const vid = document.getElementById('vf-vendedor').value;
   const preview = document.getElementById('venda-preview');
   if(!sel.value||!preview) return preview.innerHTML='';
   const p = PRODUTOS.find(x=>x.id==sel.value);
   if(!p) return preview.innerHTML='';
+  const v = VENDEDORES.find(x=>x.id==vid);
   const rec = qtd * p.precoVenda;
   const cst = qtd * p.custoProducao;
-  const rest = rec * 0.30;
+  const pctCom = v ? v.comissaoPct : 30;
+  const com = rec * pctCom / 100;
+  const ret = rec - cst - com;
   preview.innerHTML = `
     <span><span class="vp-label">Receita</span> <span class="vp-val">${br(rec)}</span></span>
     <span><span class="vp-label">Custo</span> <span class="vp-val">${br(cst)}</span></span>
-    <span><span class="vp-label">Com. Rest. (30%)</span> <span class="vp-val">${br(rest)}</span></span>
+    <span><span class="vp-label">Com. (${pctCom}%)</span> <span class="vp-val">${br(com)}</span></span>
+    <span style="font-weight:700;color:var(--green)"><span class="vp-label">Retorno</span> <span class="vp-val">${br(ret)}</span></span>
   `;
 }
 function getWeek(d){
@@ -1109,9 +1114,9 @@ function registrarVenda(){
   const v = VENDEDORES.find(x=>x.id==vid);
   const rec = qtd * p.precoVenda;
   const cst = qtd * p.custoProducao;
-  const rest = rec * 0.30;
-  const comV = v ? rec * v.comissaoPct/100 : 0;
-  const ret = rec - cst - rest - comV;
+  const pctCom = v ? v.comissaoPct : 30;
+  const com = rec * pctCom / 100;
+  const ret = rec - cst - com;
   VENDAS.push({
     id: Date.now(),
     data: data || new Date().toISOString().slice(0,10),
@@ -1120,8 +1125,8 @@ function registrarVenda(){
     vendedorNome: v ? v.nome : '—',
     receitaBruta: +rec.toFixed(2),
     custoTotal: +cst.toFixed(2),
-    comRestaurante: +rest.toFixed(2),
-    comVendedor: +comV.toFixed(2),
+    comRestaurante: v ? 0 : +com.toFixed(2),
+    comVendedor: v ? +com.toFixed(2) : 0,
     retornoLiquido: +ret.toFixed(2)
   });
   salvarVendas();
