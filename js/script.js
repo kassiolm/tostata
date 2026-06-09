@@ -22,7 +22,7 @@
     {nome:"Caixa de Pizza",qtd:1,custoUnit:3.8000,total:3.80},
     {nome:"Papel Antigordura",qtd:1,custoUnit:0.1468,total:0.15},
   ],
-  subIngredientes:6.66,subEmbalagens:3.95,totalInsumos:10.61,pctOp:15,custoOp:1.59,custoProducao:12.20,precoVenda:75,cmv:16.3,lucro:62.80,margem:83.7
+  subIngredientes:6.66,subEmbalagens:3.95,totalInsumos:10.61,pctOp:0,custoOp:0,custoProducao:10.61,precoVenda:75,cmv:14.1,lucro:64.39,margem:85.9
 },
 {id:2,nome:"Nutella com Pistache",cat:"pizza",
   ingredientes:[
@@ -35,7 +35,7 @@
     {nome:"Caixa de Pizza",qtd:1,custoUnit:3.8000,total:3.80},
     {nome:"Papel Antigordura",qtd:1,custoUnit:0.1468,total:0.15},
   ],
-  subIngredientes:12.59,subEmbalagens:3.95,totalInsumos:16.54,pctOp:15,custoOp:2.48,custoProducao:19.02,precoVenda:75,cmv:25.4,lucro:55.98,margem:74.6
+  subIngredientes:12.59,subEmbalagens:3.95,totalInsumos:16.54,pctOp:0,custoOp:0,custoProducao:16.54,precoVenda:75,cmv:22.1,lucro:58.46,margem:77.9
 },
 {id:3,nome:"Calabresa Fatiada",cat:"pizza",
   ingredientes:[
@@ -50,7 +50,7 @@
     {nome:"Caixa de Pizza",qtd:1,custoUnit:3.8000,total:3.80},
     {nome:"Papel Antigordura",qtd:1,custoUnit:0.1468,total:0.15},
   ],
-  subIngredientes:10.58,subEmbalagens:3.95,totalInsumos:14.53,pctOp:15,custoOp:2.18,custoProducao:16.71,precoVenda:75,cmv:22.3,lucro:58.29,margem:77.7
+  subIngredientes:10.58,subEmbalagens:3.95,totalInsumos:14.53,pctOp:0,custoOp:0,custoProducao:14.53,precoVenda:75,cmv:19.4,lucro:60.47,margem:80.6
 },
 {id:4,nome:"Tomate Confit",cat:"pizza",
   ingredientes:[
@@ -66,7 +66,7 @@
     {nome:"Caixa de Pizza",qtd:1,custoUnit:3.8000,total:3.80},
     {nome:"Papel Antigordura",qtd:1,custoUnit:0.1468,total:0.15},
   ],
-  subIngredientes:8.87,subEmbalagens:3.95,totalInsumos:12.82,pctOp:15,custoOp:1.92,custoProducao:14.74,precoVenda:75,cmv:19.7,lucro:60.26,margem:80.3
+  subIngredientes:8.87,subEmbalagens:3.95,totalInsumos:12.82,pctOp:0,custoOp:0,custoProducao:12.82,precoVenda:75,cmv:17.1,lucro:62.18,margem:82.9
 },
 {id:5,nome:"Mussarela",cat:"pizza",
   ingredientes:[
@@ -80,7 +80,7 @@
     {nome:"Caixa de Pizza",qtd:1,custoUnit:3.8000,total:3.80},
     {nome:"Papel Antigordura",qtd:1,custoUnit:0.1468,total:0.15},
   ],
-  subIngredientes:7.04,subEmbalagens:3.95,totalInsumos:10.99,pctOp:15,custoOp:1.65,custoProducao:12.64,precoVenda:70,cmv:18.1,lucro:57.36,margem:81.9
+  subIngredientes:7.04,subEmbalagens:3.95,totalInsumos:10.99,pctOp:0,custoOp:0,custoProducao:10.99,precoVenda:70,cmv:15.7,lucro:59.01,margem:84.3
 },
 {id:6,nome:"Cacciola",cat:"pizza",
   ingredientes:[
@@ -95,7 +95,7 @@
     {nome:"Caixa de Pizza",qtd:1,custoUnit:3.8000,total:3.80},
     {nome:"Papel Antigordura",qtd:1,custoUnit:0.1468,total:0.15},
   ],
-  subIngredientes:19.61,subEmbalagens:3.95,totalInsumos:23.56,pctOp:15,custoOp:3.53,custoProducao:27.09,precoVenda:75,cmv:36.1,lucro:47.91,margem:63.9
+  subIngredientes:19.61,subEmbalagens:3.95,totalInsumos:23.56,pctOp:0,custoOp:0,custoProducao:23.56,precoVenda:75,cmv:31.4,lucro:51.44,margem:68.6
 },
 {id:7,nome:"Quatro Queijos",cat:"pizza",
   ingredientes:[
@@ -112,7 +112,7 @@
     {nome:"Caixa de Pizza",qtd:1,custoUnit:3.8000,total:3.80},
     {nome:"Papel Antigordura",qtd:1,custoUnit:0.1468,total:0.15},
   ],
-  subIngredientes:12.08,subEmbalagens:3.95,totalInsumos:16.03,pctOp:15,custoOp:2.40,custoProducao:18.43,precoVenda:80,cmv:23.0,lucro:61.57,margem:77.0
+  subIngredientes:12.08,subEmbalagens:3.95,totalInsumos:16.03,pctOp:0,custoOp:0,custoProducao:16.03,precoVenda:80,cmv:20.0,lucro:63.97,margem:80.0
 },
 {id:8,nome:"Diavola Rosa",cat:"pizza",
   ingredientes:[
@@ -128,7 +128,7 @@
     {nome:"Caixa de Pizza",qtd:1,custoUnit:3.8000,total:3.80},
     {nome:"Papel Antigordura",qtd:1,custoUnit:0.1468,total:0.15},
   ],
-  subIngredientes:20.25,subEmbalagens:3.95,totalInsumos:24.20,pctOp:15,custoOp:3.63,custoProducao:27.83,precoVenda:80,cmv:34.8,lucro:52.17,margem:65.2
+  subIngredientes:20.25,subEmbalagens:3.95,totalInsumos:24.20,pctOp:0,custoOp:0,custoProducao:24.20,precoVenda:80,cmv:30.3,lucro:55.80,margem:69.8
 },
 {id:9,nome:"Toscana Defumada c/ Rúcula",cat:"pizza",
   ingredientes:[
@@ -144,7 +144,7 @@
     {nome:"Caixa de Pizza",qtd:1,custoUnit:3.8000,total:3.80},
     {nome:"Papel Antigordura",qtd:1,custoUnit:0.1468,total:0.15},
   ],
-  subIngredientes:12.43,subEmbalagens:3.95,totalInsumos:16.38,pctOp:15,custoOp:2.46,custoProducao:18.84,precoVenda:80,cmv:23.6,lucro:61.16,margem:76.4
+  subIngredientes:12.43,subEmbalagens:3.95,totalInsumos:16.38,pctOp:0,custoOp:0,custoProducao:16.38,precoVenda:80,cmv:20.5,lucro:63.62,margem:79.5
 },
 {id:10,nome:"Pera com Mel",cat:"pizza",
   ingredientes:[
@@ -160,7 +160,7 @@
     {nome:"Caixa de Pizza",qtd:1,custoUnit:3.8000,total:3.80},
     {nome:"Papel Antigordura",qtd:1,custoUnit:0.1468,total:0.15},
   ],
-  subIngredientes:14.25,subEmbalagens:3.95,totalInsumos:18.20,pctOp:15,custoOp:2.73,custoProducao:20.93,precoVenda:75,cmv:27.9,lucro:54.07,margem:72.1
+  subIngredientes:14.25,subEmbalagens:3.95,totalInsumos:18.20,pctOp:0,custoOp:0,custoProducao:18.20,precoVenda:75,cmv:24.3,lucro:56.80,margem:75.7
 },
 {id:11,nome:"Rúcula e Parma",cat:"pizza",
   ingredientes:[
@@ -176,7 +176,7 @@
     {nome:"Caixa de Pizza",qtd:1,custoUnit:3.8000,total:3.80},
     {nome:"Papel Antigordura",qtd:1,custoUnit:0.1468,total:0.15},
   ],
-  subIngredientes:26.48,subEmbalagens:3.95,totalInsumos:30.43,pctOp:15,custoOp:4.56,custoProducao:34.99,precoVenda:95,cmv:36.8,lucro:60.01,margem:63.2
+  subIngredientes:26.48,subEmbalagens:3.95,totalInsumos:30.43,pctOp:0,custoOp:0,custoProducao:30.43,precoVenda:95,cmv:32.0,lucro:64.57,margem:68.0
 },
 {id:12,nome:"Mortadela c/ Pistache",cat:"panuozzo",
   ingredientes:[
@@ -190,7 +190,7 @@
   embalagens:[
     {nome:"Papel Antigordura",qtd:1,custoUnit:0.1468,total:0.15},
   ],
-  subIngredientes:13.67,subEmbalagens:0.15,totalInsumos:13.82,pctOp:15,custoOp:2.07,custoProducao:15.89,precoVenda:50,cmv:31.8,lucro:34.11,margem:68.2
+  subIngredientes:13.67,subEmbalagens:0.15,totalInsumos:13.82,pctOp:0,custoOp:0,custoProducao:13.82,precoVenda:50,cmv:27.6,lucro:36.18,margem:72.4
 },
 {id:13,nome:"Panuozzo Caprese",cat:"panuozzo",
   ingredientes:[
@@ -202,7 +202,7 @@
   embalagens:[
     {nome:"Papel Antigordura",qtd:1,custoUnit:0.1468,total:0.15},
   ],
-  subIngredientes:6.32,subEmbalagens:0.15,totalInsumos:6.47,pctOp:15,custoOp:0.97,custoProducao:7.44,precoVenda:50,cmv:14.9,lucro:42.56,margem:85.1
+  subIngredientes:6.32,subEmbalagens:0.15,totalInsumos:6.47,pctOp:0,custoOp:0,custoProducao:6.47,precoVenda:50,cmv:12.9,lucro:43.53,margem:87.1
 },
 {id:14,nome:"Napolidog NY",cat:"napolidog",
   ingredientes:[
@@ -218,7 +218,7 @@
     {nome:"Caixa de Pizza",qtd:1,custoUnit:3.8000,total:3.80},
     {nome:"Papel Antigordura",qtd:1,custoUnit:0.1468,total:0.15},
   ],
-  subIngredientes:1.70,subEmbalagens:3.95,totalInsumos:5.65,pctOp:15,custoOp:0.85,custoProducao:6.50,precoVenda:30,cmv:21.7,lucro:23.50,margem:78.3
+  subIngredientes:1.70,subEmbalagens:3.95,totalInsumos:5.65,pctOp:0,custoOp:0,custoProducao:5.65,precoVenda:30,cmv:18.8,lucro:24.35,margem:81.2
 },
 {id:15,nome:"Napolidog Tex Mex",cat:"napolidog",
   ingredientes:[
@@ -232,7 +232,7 @@
     {nome:"Papel Antigordura",qtd:1,custoUnit:0.1468,total:0.15},
     {nome:"Prato Descartável Tam 4",qtd:1,custoUnit:0.2750,total:0.28},
   ],
-  subIngredientes:7.98,subEmbalagens:0.43,totalInsumos:8.41,pctOp:15,custoOp:1.26,custoProducao:9.67,precoVenda:35,cmv:27.6,lucro:25.33,margem:72.4
+  subIngredientes:7.98,subEmbalagens:0.43,totalInsumos:8.41,pctOp:0,custoOp:0,custoProducao:8.41,precoVenda:35,cmv:24.0,lucro:26.59,margem:76.0
 }
 ];
 let filtroAtual = 'todos';
@@ -416,7 +416,7 @@ function calcPrec(){
   const nome = document.getElementById('p-nome').value.trim()||'Novo Produto';
   const cat = document.getElementById('p-cat').value;
   const emb = parseFloat(document.getElementById('p-embal').value)||0;
-  const opPct = parseInt(document.getElementById('op-pct').value)||15;
+  const opPct = parseInt(document.getElementById('op-pct').value)||0;
   const preco = parseFloat(document.getElementById('p-preco').value)||0;
   const subIng = ingPrecList.reduce((s,i)=>s+(i.qtd||0)*(i.custo||0),0);
   const subEmb = emb;
@@ -487,7 +487,7 @@ function salvarPrec(){
   if(!nome) return toast('Informe o nome do produto','');
   const cat = document.getElementById('p-cat').value;
   const emb = parseFloat(document.getElementById('p-embal').value)||0;
-  const opPct = parseInt(document.getElementById('op-pct').value)||15;
+  const opPct = parseInt(document.getElementById('op-pct').value)||0;
   const preco = parseFloat(document.getElementById('p-preco').value)||0;
   if(ingPrecList.length===0) return toast('Adicione pelo menos um ingrediente','');
   const ingredients = ingPrecList.map(i=>{
@@ -512,8 +512,8 @@ function salvarPrec(){
   ingPrecList = [];
   document.getElementById('p-nome').value='';
   document.getElementById('p-embal').value='3.95';
-  document.getElementById('op-pct').value='15';
-  document.getElementById('op-pct-val').textContent='15%';
+  document.getElementById('op-pct').value='0';
+  document.getElementById('op-pct-val').textContent='0%';
   document.getElementById('p-preco').value='75';
   renderFichas();
   renderDashboard();
@@ -578,8 +578,8 @@ function editarProduto(){
   document.getElementById('p-nome').value = produtoAtual.nome;
   document.getElementById('p-cat').value = produtoAtual.cat;
   document.getElementById('p-embal').value = produtoAtual.subEmbalagens || 3.95;
-  document.getElementById('op-pct').value = produtoAtual.pctOp || 15;
-  document.getElementById('op-pct-val').textContent = (produtoAtual.pctOp||15)+'%';
+  document.getElementById('op-pct').value = produtoAtual.pctOp || 0;
+  document.getElementById('op-pct-val').textContent = (produtoAtual.pctOp||0)+'%';
   document.getElementById('p-preco').value = produtoAtual.precoVenda;
   ingPrecList = (produtoAtual.ingredientes||[]).map(i=>({nome:i.nome,qtd:i.qtd,custo:i.custoUnit,total:i.total}));
   fecharModalBtn();
@@ -1350,7 +1350,7 @@ function parseCSV(text){
       let cat='pizza';
       if(lc.includes('panuozzo')) cat='panuozzo';
       else if(lc.includes('napolidog')) cat='napolidog';
-      cur={nome:n,cat,ingredientes:[],embalagens:[],outrosGastos:0,pctOp:15,precoVenda:0};
+      cur={nome:n,cat,ingredientes:[],embalagens:[],outrosGastos:0,pctOp:0,precoVenda:0};
       sec=''; continue;
     }
     if(!cur) continue;
@@ -1434,6 +1434,11 @@ function resetarLogo(){
 
 // ==================== INIT ====================
 if(!carregarDados() || !PRODUTOS.length){
+  PRODUTOS = PRODUTOS.map(recalcularProduto);
+  salvarDados();
+} else {
+  // migração: forçar custos operacionais para 0%
+  PRODUTOS.forEach(p => { p.pctOp = 0; });
   PRODUTOS = PRODUTOS.map(recalcularProduto);
   salvarDados();
 }
