@@ -438,18 +438,18 @@ function carregarVendedores(){
 // ═══════════════ Supabase Sync ═══════════════
 const SUPABASE_URL = 'https://ltmjrdlqnlwgtliehfqx.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx0bWpyZGxxbmx3Z3RsaWVoZnF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMTM3NzgsImV4cCI6MjA5NjU4OTc3OH0.YP1rX9jkFpGZ8XmgxpMCLEJJ9tWdhtdeSafxtUvuCaY';
-let _supabase = null;
+const SUPABASE_TABLE = 'app_data';
 let _syncTimer = null;
 
-function initSupabase(){
-  if(typeof supabase === 'undefined') return false;
-  try{
-    _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    return true;
-  }catch(e){ return false; }
+function headers(){
+  return {
+    'apikey': SUPABASE_KEY,
+    'Authorization': 'Bearer ' + SUPABASE_KEY,
+    'Content-Type': 'application/json'
+  };
 }
+
 function syncSupabase(){
-  if(!_supabase) return;
   const ind = document.getElementById('sync-indicator');
   if(ind) ind.className = 'sync-indicator syncing';
   clearTimeout(_syncTimer);
@@ -463,11 +463,12 @@ function syncSupabase(){
       logo: localStorage.getItem('tostata_logo') || null
     };
     try{
-      const { error } = await _supabase.from('app_data').upsert(
-        { id: 1, data, updated_at: new Date().toISOString() },
-        { onConflict: 'id' }
-      );
-      if(error) console.warn('Supabase sync error:', error.message);
+      const r = await fetch(SUPABASE_URL + '/rest/v1/' + SUPABASE_TABLE, {
+        method: 'POST',
+        headers: Object.assign(headers(), { 'Prefer': 'resolution=merge-duplicates' }),
+        body: JSON.stringify({ id: 1, data, updated_at: new Date().toISOString() })
+      });
+      if(!r.ok) console.warn('Supabase sync error:', r.status, r.statusText);
       const ind2 = document.getElementById('sync-indicator');
       if(ind2) ind2.className = 'sync-indicator';
     }catch(e){ console.warn('Supabase sync error:', e.message);
@@ -475,13 +476,16 @@ function syncSupabase(){
       if(ind2) ind2.className = 'sync-indicator'; }
   }, 1000);
 }
+
 async function carregarSupabase(){
-  if(!initSupabase()) return false;
   try{
-    const { data, error } = await _supabase.from('app_data').select('data').eq('id',1).single();
-    if(error) return false;
-    if(!data || !data.data) return false;
-    const d = data.data;
+    const r = await fetch(SUPABASE_URL + '/rest/v1/' + SUPABASE_TABLE + '?id=eq.1', {
+      headers: headers()
+    });
+    if(!r.ok) return false;
+    const rows = await r.json();
+    if(!rows || !rows.length || !rows[0].data) return false;
+    const d = rows[0].data;
     if(d.produtos && d.produtos.length) PRODUTOS = d.produtos;
     if(d.ingredientes && d.ingredientes.length) INGREDIENTES = d.ingredientes;
     if(d.vendas && d.vendas.length) VENDAS = d.vendas;
