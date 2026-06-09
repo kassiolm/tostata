@@ -32,7 +32,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 110px;
+    height: 100px;
     position: sticky;
     top: 0;
     z-index: 100;
@@ -322,7 +322,7 @@
     .dash-grid { grid-template-columns: 1fr; }
     .fichas-grid { grid-template-columns: 1fr; }
     .precif-layout { grid-template-columns: 1fr; }
-    .topbar { padding: 0 0.75rem; flex-wrap: nowrap; height: 80px; gap: 4px; overflow-x: auto; }
+    .topbar { padding: 0 0.75rem; flex-wrap: nowrap; height: 72px; gap: 4px; overflow-x: auto; }
     .topbar .logo { font-size: 1.5rem; white-space: nowrap; }
     .topbar-actions { gap: 2px; }
     .topbar-btn { padding: 6px 8px; font-size: 15px; min-width: 36px; min-height: 36px; }
@@ -371,7 +371,7 @@
   @media (max-width: 480px) {
     .kpi-grid { grid-template-columns: 1fr 1fr; gap: 0.5rem; }
     .ins-resumo { grid-template-columns: 1fr 1fr; gap: 0.5rem; }
-    .topbar { padding: 0 0.5rem; height: 70px; }
+    .topbar { padding: 0 0.5rem; height: 64px; }
     .topbar .logo { font-size: 1.3rem; }
     .nav-tab { padding: 6px 8px; font-size: 11px; }
     .topbar-btn { padding: 4px 6px; font-size: 13px; min-width: 32px; min-height: 32px; }
