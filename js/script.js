@@ -402,12 +402,15 @@ function setFiltro(f){
 
 function salvarDados(){
   try{ localStorage.setItem('tostata_produtos', JSON.stringify(PRODUTOS)); }catch(e){}
+  syncSupabase();
 }
 function salvarVendas(){
   try{ localStorage.setItem('tostata_vendas', JSON.stringify(VENDAS)); }catch(e){}
+  syncSupabase();
 }
 function salvarVendedores(){
   try{ localStorage.setItem('tostata_vendedores', JSON.stringify(VENDEDORES)); }catch(e){}
+  syncSupabase();
 }
 
 function carregarDados(){
@@ -430,6 +433,57 @@ function carregarVendedores(){
     if(dados){ VENDEDORES = JSON.parse(dados); return true; }
   }catch(e){}
   return false;
+}
+
+// ═══════════════ Supabase Sync ═══════════════
+const SUPABASE_URL = 'https://ltmjrdlqnlwgtliehfqx.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx0bWpyZGxxbmx3Z3RsaWVoZnF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMTM3NzgsImV4cCI6MjA5NjU4OTc3OH0.YP1rX9jkFpGZ8XmgxpMCLEJJ9tWdhtdeSafxtUvuCaY';
+let _supabase = null;
+let _syncTimer = null;
+
+function initSupabase(){
+  if(typeof supabase === 'undefined') return false;
+  try{
+    _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    return true;
+  }catch(e){ return false; }
+}
+function syncSupabase(){
+  if(!_supabase) return;
+  clearTimeout(_syncTimer);
+  _syncTimer = setTimeout(async () => {
+    const data = {
+      produtos: PRODUTOS,
+      ingredientes: INGREDIENTES,
+      vendas: VENDAS,
+      vendedores: VENDEDORES,
+      categorias: CATEGORIAS,
+      logo: localStorage.getItem('tostata_logo') || null
+    };
+    try{
+      const { error } = await _supabase.from('app_data').upsert(
+        { id: 1, data, updated_at: new Date().toISOString() },
+        { onConflict: 'id' }
+      );
+      if(error) console.warn('Supabase sync error:', error.message);
+    }catch(e){ console.warn('Supabase sync error:', e.message); }
+  }, 1000);
+}
+async function carregarSupabase(){
+  if(!initSupabase()) return false;
+  try{
+    const { data, error } = await _supabase.from('app_data').select('data').eq('id',1).single();
+    if(error) return false;
+    if(!data || !data.data) return false;
+    const d = data.data;
+    if(d.produtos && d.produtos.length) PRODUTOS = d.produtos;
+    if(d.ingredientes && d.ingredientes.length) INGREDIENTES = d.ingredientes;
+    if(d.vendas && d.vendas.length) VENDAS = d.vendas;
+    if(d.vendedores && d.vendedores.length) VENDEDORES = d.vendedores;
+    if(d.categorias && d.categorias.length) CATEGORIAS = d.categorias;
+    if(d.logo) localStorage.setItem('tostata_logo', d.logo);
+    return true;
+  }catch(e){ return false; }
 }
 
 function renderDashboard(){
@@ -741,6 +795,7 @@ let CATEGORIAS = [
 
 function salvarCategorias(){
   try{ localStorage.setItem('tostata_categorias', JSON.stringify(CATEGORIAS)); }catch(e){}
+  syncSupabase();
 }
 function carregarCategorias(){
   try{
@@ -930,6 +985,7 @@ function setFiltroInsumo(f){
 
 function salvarIngredientes(){
   try{ localStorage.setItem('tostata_ingredientes', JSON.stringify(INGREDIENTES)); }catch(e){}
+  syncSupabase();
 }
 
 function carregarIngredientes(){
@@ -1616,27 +1672,39 @@ function resetarLogo(){
 }
 
 // ==================== INIT ====================
-if(!carregarCategorias() || !CATEGORIAS.length){
-  salvarCategorias();
-}
-popularSelectCat();
-if(!carregarDados() || !PRODUTOS.length){
-  PRODUTOS = PRODUTOS.map(recalcularProduto);
-  salvarDados();
-} else {
-  // migração: forçar custos operacionais para 0%
-  PRODUTOS.forEach(p => { p.pctOp = 0; });
-  PRODUTOS = PRODUTOS.map(recalcularProduto);
-  salvarDados();
-}
-if(!carregarIngredientes() || !INGREDIENTES.length){
-  INGREDIENTES = inicializarIngredientes().map(recalcularEstoque);
-  salvarIngredientes();
-}
-carregarVendas();
-carregarVendedores();
-carregarLogo();
-renderDashboard();
-renderFichas();
-renderInsumos();
-calcPrec();
+(async function init(){
+  const supabaseOk = await carregarSupabase();
+  if(supabaseOk){
+    salvarCategorias();
+    popularSelectCat();
+    salvarDados();
+    salvarIngredientes();
+    salvarVendas();
+    salvarVendedores();
+    carregarLogo();
+  } else {
+    if(!carregarCategorias() || !CATEGORIAS.length){
+      salvarCategorias();
+    }
+    popularSelectCat();
+    if(!carregarDados() || !PRODUTOS.length){
+      PRODUTOS = PRODUTOS.map(recalcularProduto);
+      salvarDados();
+    } else {
+      PRODUTOS.forEach(p => { p.pctOp = 0; });
+      PRODUTOS = PRODUTOS.map(recalcularProduto);
+      salvarDados();
+    }
+    if(!carregarIngredientes() || !INGREDIENTES.length){
+      INGREDIENTES = inicializarIngredientes().map(recalcularEstoque);
+      salvarIngredientes();
+    }
+    carregarVendas();
+    carregarVendedores();
+    carregarLogo();
+  }
+  renderDashboard();
+  renderFichas();
+  renderInsumos();
+  calcPrec();
+})();
