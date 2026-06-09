@@ -289,11 +289,12 @@ function onSelectIng(){
 function goPage(p){
   document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));
   document.getElementById('page-'+p).classList.add('active');
-  document.querySelectorAll('.nav-tab').forEach((e,i)=>e.classList.toggle('active',['dashboard','fichas','insumos','precificador'][i]===p));
+  document.querySelectorAll('.nav-tab').forEach((e,i)=>e.classList.toggle('active',['dashboard','fichas','insumos','precificador','vendas'][i]===p));
   if(p==='dashboard') renderDashboard();
   if(p==='fichas') renderFichas();
   if(p==='insumos') renderInsumos();
   if(p==='precificador'){ popularSelectIng(); calcPrec(); }
+  if(p==='vendas') renderVendas();
 }
 
 function setFiltro(f){
@@ -307,11 +308,31 @@ function setFiltro(f){
 function salvarDados(){
   try{ localStorage.setItem('tostata_produtos', JSON.stringify(PRODUTOS)); }catch(e){}
 }
+function salvarVendas(){
+  try{ localStorage.setItem('tostata_vendas', JSON.stringify(VENDAS)); }catch(e){}
+}
+function salvarVendedores(){
+  try{ localStorage.setItem('tostata_vendedores', JSON.stringify(VENDEDORES)); }catch(e){}
+}
 
 function carregarDados(){
   try{
     const dados = localStorage.getItem('tostata_produtos');
     if(dados){ PRODUTOS = JSON.parse(dados); return true; }
+  }catch(e){}
+  return false;
+}
+function carregarVendas(){
+  try{
+    const dados = localStorage.getItem('tostata_vendas');
+    if(dados){ VENDAS = JSON.parse(dados); return true; }
+  }catch(e){}
+  return false;
+}
+function carregarVendedores(){
+  try{
+    const dados = localStorage.getItem('tostata_vendedores');
+    if(dados){ VENDEDORES = JSON.parse(dados); return true; }
   }catch(e){}
   return false;
 }
@@ -579,6 +600,9 @@ function excluirProduto(){
 }
 
 let INGREDIENTES = [];
+let VENDEDORES = [];
+let VENDAS = [];
+let vendIdEdit = null;
 let filtroInsumoAtual = 'todos';
 let insumoModo = 'view'; // 'view' | 'form'
 let insumoEditId = null;
@@ -943,9 +967,281 @@ function excluirInsumo(){
   insumoAtual = null;
 }
 
+// ==================== VENDEDORES ====================
+function renderListaVendedores(){
+  const el = document.getElementById('vend-lista');
+  const empty = document.getElementById('vend-empty');
+  if(!el) return;
+  if(!VENDEDORES.length){
+    el.innerHTML = '';
+    if(empty) empty.style.display = '';
+    return;
+  }
+  if(empty) empty.style.display = 'none';
+  el.innerHTML = VENDEDORES.map(v => `
+    <div class="vend-item">
+      <div class="vend-info">
+        <div class="vend-nome">${v.nome}</div>
+        <div class="vend-comissao">Comissão: ${v.comissaoPct}%</div>
+      </div>
+      <div class="vend-actions">
+        <button onclick="editarVendedor(${v.id})">✏️</button>
+        <button class="del" onclick="excluirVendedor(${v.id})">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+function abrirModalVendedor(){
+  vendIdEdit = null;
+  document.getElementById('vend-nome').value = '';
+  document.getElementById('vend-comissao').value = '';
+  renderListaVendedores();
+  document.getElementById('modal-vendedor').classList.add('open');
+  lockScroll(true);
+}
+function fecharModalVendedor(){
+  document.getElementById('modal-vendedor').classList.remove('open');
+  lockScroll(false);
+}
+function salvarVendedor(){
+  const nome = document.getElementById('vend-nome').value.trim();
+  const com = parseFloat(document.getElementById('vend-comissao').value);
+  if(!nome) return toast('Informe o nome do vendedor','');
+  if(isNaN(com)||com<0||com>100) return toast('Informe uma comissão válida (0-100%)','');
+  if(vendIdEdit){
+    const v = VENDEDORES.find(x=>x.id===vendIdEdit);
+    if(v){ v.nome = nome; v.comissaoPct = com; }
+  } else {
+    VENDEDORES.push({ id: Date.now(), nome, comissaoPct: com });
+  }
+  salvarVendedores();
+  vendIdEdit = null;
+  document.getElementById('vend-nome').value = '';
+  document.getElementById('vend-comissao').value = '';
+  renderListaVendedores();
+  toast(vendIdEdit?'Vendedor atualizado!':'Vendedor cadastrado!','ok');
+}
+function editarVendedor(id){
+  const v = VENDEDORES.find(x=>x.id===id);
+  if(!v) return;
+  vendIdEdit = id;
+  document.getElementById('vend-nome').value = v.nome;
+  document.getElementById('vend-comissao').value = v.comissaoPct;
+}
+function excluirVendedor(id){
+  if(!confirm('Excluir este vendedor?')) return;
+  VENDEDORES = VENDEDORES.filter(x=>x.id!==id);
+  salvarVendedores();
+  renderListaVendedores();
+  toast('Vendedor excluído','ok');
+}
+
+// ==================== VENDAS ====================
+function popularSelectProdutoVenda(){
+  const sel = document.getElementById('vf-produto');
+  if(!sel) return;
+  sel.innerHTML = '<option value="">Selecione...</option>'
+    + PRODUTOS.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
+}
+function popularSelectVendedor(){
+  const sel = document.getElementById('vf-vendedor');
+  if(!sel) return;
+  sel.innerHTML = '<option value="">Selecione...</option>'
+    + VENDEDORES.map(v => `<option value="${v.id}">${v.nome}</option>`).join('');
+}
+function calcPrecoVenda(){
+  const sel = document.getElementById('vf-produto');
+  const qtd = parseFloat(document.getElementById('vf-qtd').value)||1;
+  const preview = document.getElementById('venda-preview');
+  if(!sel.value||!preview) return preview.innerHTML='';
+  const p = PRODUTOS.find(x=>x.id==sel.value);
+  if(!p) return preview.innerHTML='';
+  const rec = qtd * p.precoVenda;
+  const cst = qtd * p.custoProducao;
+  const rest = rec * 0.30;
+  preview.innerHTML = `
+    <span><span class="vp-label">Receita</span> <span class="vp-val">${br(rec)}</span></span>
+    <span><span class="vp-label">Custo</span> <span class="vp-val">${br(cst)}</span></span>
+    <span><span class="vp-label">Com. Rest. (30%)</span> <span class="vp-val">${br(rest)}</span></span>
+  `;
+}
+function getWeek(d){
+  const dt = new Date(d);
+  dt.setHours(0,0,0,0);
+  dt.setDate(dt.getDate() + 3 - (dt.getDay()+6)%7);
+  const w1 = new Date(dt.getFullYear(),0,4);
+  return dt.getFullYear() + '-W' + String(1 + Math.round(((dt-w1)/86400000 - 3 + (w1.getDay()+6)%7)/7)).padStart(2,'0');
+}
+function renderVendas(){
+  popularSelectProdutoVenda();
+  popularSelectVendedor();
+  const hoje = new Date().toISOString().slice(0,10);
+  document.getElementById('vf-data').value = hoje;
+  const wk = getWeek(hoje);
+  document.getElementById('graf-semana').value = wk;
+  renderKPIVendas();
+  renderTabelaVendas();
+  renderGraficoSemanal();
+}
+function renderKPIVendas(){
+  const el = document.getElementById('vendas-kpi');
+  if(!el) return;
+  const totalRec = VENDAS.reduce((s,v)=>s+v.receitaBruta,0);
+  const totalCst = VENDAS.reduce((s,v)=>s+v.custoTotal,0);
+  const totalCom = VENDAS.reduce((s,v)=>s+v.comRestaurante+v.comVendedor,0);
+  const totalRet = VENDAS.reduce((s,v)=>s+v.retornoLiquido,0);
+  el.innerHTML = `
+    <div class="kpi accent"><div class="kpi-label">Receita Bruta</div><div class="kpi-value">${br(totalRec)}</div></div>
+    <div class="kpi"><div class="kpi-label">Custo Total</div><div class="kpi-value">${br(totalCst)}</div></div>
+    <div class="kpi yellow"><div class="kpi-label">Comissões</div><div class="kpi-value">${br(totalCom)}</div></div>
+    <div class="kpi green"><div class="kpi-label">Retorno Líquido</div><div class="kpi-value">${br(totalRet)}</div></div>
+  `;
+}
+function registrarVenda(){
+  const pid = document.getElementById('vf-produto').value;
+  const qtd = parseInt(document.getElementById('vf-qtd').value)||0;
+  const vid = document.getElementById('vf-vendedor').value;
+  const data = document.getElementById('vf-data').value;
+  if(!pid) return toast('Selecione um produto','');
+  if(qtd<1) return toast('Quantidade inválida','');
+  const p = PRODUTOS.find(x=>x.id==pid);
+  if(!p) return toast('Produto não encontrado','');
+  const v = VENDEDORES.find(x=>x.id==vid);
+  const rec = qtd * p.precoVenda;
+  const cst = qtd * p.custoProducao;
+  const rest = rec * 0.30;
+  const comV = v ? rec * v.comissaoPct/100 : 0;
+  const ret = rec - cst - rest - comV;
+  VENDAS.push({
+    id: Date.now(),
+    data: data || new Date().toISOString().slice(0,10),
+    itens: [{ produtoId: p.id, qtd, nome: p.nome, precoVenda: p.precoVenda, custoProducao: p.custoProducao }],
+    vendedorId: vid || null,
+    vendedorNome: v ? v.nome : '—',
+    receitaBruta: +rec.toFixed(2),
+    custoTotal: +cst.toFixed(2),
+    comRestaurante: +rest.toFixed(2),
+    comVendedor: +comV.toFixed(2),
+    retornoLiquido: +ret.toFixed(2)
+  });
+  salvarVendas();
+  document.getElementById('vf-produto').value = '';
+  document.getElementById('vf-qtd').value = '1';
+  document.getElementById('vf-vendedor').value = '';
+  document.getElementById('venda-preview').innerHTML = '';
+  renderVendas();
+  toast(`Venda registrada: ${p.nome} x${qtd} — Retorno ${br(ret)}`,'ok');
+}
+function renderTabelaVendas(){
+  const tbody = document.getElementById('vendas-tbody');
+  const empty = document.getElementById('vendas-empty');
+  if(!tbody) return;
+  if(!VENDAS.length){
+    tbody.innerHTML = '';
+    if(empty) empty.style.display = '';
+    return;
+  }
+  if(empty) empty.style.display = 'none';
+  tbody.innerHTML = [...VENDAS].reverse().map(v => `
+    <tr>
+      <td style="white-space:nowrap">${v.data}</td>
+      <td>${v.itens.map(i=>i.nome+' x'+i.qtd).join(', ')}</td>
+      <td style="text-align:right">${v.itens.reduce((s,i)=>s+i.qtd,0)}</td>
+      <td style="text-align:right">${br(v.receitaBruta)}</td>
+      <td style="text-align:right">${br(v.custoTotal)}</td>
+      <td style="text-align:right;font-weight:600;color:${v.retornoLiquido>=0?'var(--green)':'var(--red)'}">${br(v.retornoLiquido)}</td>
+      <td>${v.vendedorNome}</td>
+      <td style="text-align:right"><button class="stock-action-btn" onclick="excluirVenda(${v.id})">🗑️</button></td>
+    </tr>
+  `).join('');
+}
+function excluirVenda(id){
+  if(!confirm('Excluir esta venda?')) return;
+  VENDAS = VENDAS.filter(v=>v.id!==id);
+  salvarVendas();
+  renderVendas();
+  toast('Venda excluída','ok');
+}
+function exportarVendasCSV(){
+  if(!VENDAS.length) return toast('Nenhuma venda para exportar','');
+  let csv = 'Data,Produto(s),Qtd,Receita Bruta,Custo Total,Com.Restaurante,Com.Vendedor,Retorno Líquido,Vendedor\n';
+  VENDAS.forEach(v => {
+    csv += `${v.data},"${v.itens.map(i=>i.nome+' x'+i.qtd).join('; ')}",${v.itens.reduce((s,i)=>s+i.qtd,0)},${v.receitaBruta},${v.custoTotal},${v.comRestaurante},${v.comVendedor},${v.retornoLiquido},"${v.vendedorNome}"\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'tostata_vendas_'+new Date().toISOString().slice(0,10)+'.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('Vendas exportadas!','ok');
+}
+function renderGraficoSemanal(){
+  const canvas = document.getElementById('graf-canvas');
+  const empty = document.getElementById('chart-empty');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const weekVal = document.getElementById('graf-semana').value;
+  if(!weekVal){ if(empty) empty.style.display=''; ctx.clearRect(0,0,canvas.width,canvas.height); return; }
+  const [year,wn] = weekVal.split('-W').map(Number);
+  const dias = VENDAS.filter(v => {
+    const w = getWeek(v.data);
+    return w === weekVal;
+  });
+  if(!dias.length){
+    if(empty) empty.style.display='';
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    return;
+  }
+  if(empty) empty.style.display='none';
+  const W = canvas.width = canvas.offsetWidth;
+  const H = canvas.height = 280;
+  const pad = { t:20, r:16, b:40, l:50 };
+  const cw = W - pad.l - pad.r;
+  const ch = H - pad.t - pad.b;
+  ctx.clearRect(0,0,W,H);
+  const max = Math.max(...dias.map(d=>d.receitaBruta),1)*1.15;
+  const nomes = [...new Set(dias.map(d=>d.data))].sort();
+  const gap = 4;
+  const bw = Math.min((cw - gap*(nomes.length-1))/nomes.length, 80);
+  const totalW = nomes.length*bw + (nomes.length-1)*gap;
+  const xOff = pad.l + (cw - totalW)/2;
+  // grid lines
+  ctx.strokeStyle = '#D9D0C0';
+  ctx.lineWidth = 1;
+  ctx.font = '11px DM Sans, sans-serif';
+  ctx.fillStyle = '#7A6B5D';
+  ctx.textAlign = 'right';
+  for(let i=0;i<=4;i++){
+    const y = pad.t + ch - (ch*i/4);
+    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(W-pad.r,y); ctx.stroke();
+    ctx.fillText('R$ '+(max*i/4).toFixed(0), pad.l-4, y+4);
+  }
+  nomes.forEach((d,i) => {
+    const vs = dias.filter(x=>x.data===d);
+    const rec = vs.reduce((s,x)=>s+x.receitaBruta,0);
+    const ret = vs.reduce((s,x)=>s+x.retornoLiquido,0);
+    const x = xOff + i*(bw+gap);
+    const h1 = (rec/max)*ch;
+    const h2 = (ret/max)*ch;
+    // Receita bar
+    ctx.fillStyle = '#5C6B46';
+    ctx.fillRect(x, pad.t+ch-h1, bw/2-1, h1);
+    // Retorno bar
+    ctx.fillStyle = '#B83A00';
+    ctx.fillRect(x+bw/2+1, pad.t+ch-h2, bw/2-1, h2);
+    // Labels
+    ctx.fillStyle = '#7A6B5D';
+    ctx.textAlign = 'center';
+    ctx.font = '10px DM Sans, sans-serif';
+    const parts = d.split('-');
+    ctx.fillText(parts[2]+'/'+parts[1], x+bw/2, pad.t+ch+16);
+  });
+}
+
 // ==================== BACKUP (JSON file) ====================
 function exportarDados(){
-  const dados = { produtos: PRODUTOS, ingredientes: INGREDIENTES, exportadoEm: new Date().toISOString() };
+  const dados = { produtos: PRODUTOS, ingredientes: INGREDIENTES, vendas: VENDAS, vendedores: VENDEDORES, exportadoEm: new Date().toISOString() };
   const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -979,11 +1275,19 @@ function carregarArquivo(ev){
         INGREDIENTES = dados.ingredientes.map(recalcularEstoque);
         salvarIngredientes();
       }
+      if(dados.vendas && Array.isArray(dados.vendas)){
+        VENDAS = dados.vendas;
+        salvarVendas();
+      }
+      if(dados.vendedores && Array.isArray(dados.vendedores)){
+        VENDEDORES = dados.vendedores;
+        salvarVendedores();
+      }
       renderDashboard();
       renderFichas();
       renderInsumos();
       calcPrec();
-      toast(`Dados importados (${PRODUTOS.length} produtos, ${(INGREDIENTES||[]).length} insumos)!`,'ok');
+      toast(`Dados importados (${PRODUTOS.length} produtos, ${(INGREDIENTES||[]).length} insumos, ${VENDAS.length} vendas)!`,'ok');
     } catch(err) {
       toast('Erro ao ler arquivo: '+err.message,'');
     }
@@ -1089,6 +1393,8 @@ if(!carregarIngredientes() || !INGREDIENTES.length){
   INGREDIENTES = inicializarIngredientes().map(recalcularEstoque);
   salvarIngredientes();
 }
+carregarVendas();
+carregarVendedores();
 renderDashboard();
 renderFichas();
 renderInsumos();

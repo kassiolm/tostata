@@ -19,6 +19,7 @@
     <button class="nav-tab" onclick="goPage('fichas')">Fichas <span class="badge-count" id="badge-fichas">0</span></button>
     <button class="nav-tab" onclick="goPage('insumos')">Insumos <span class="badge-count" id="badge-insumos" style="display:none">0</span></button>
     <button class="nav-tab" onclick="goPage('precificador')">Precificador</button>
+    <button class="nav-tab" onclick="goPage('vendas')">Vendas</button>
   </div>
   <div class="topbar-actions">
     <button class="topbar-btn" onclick="document.getElementById('csv-input').click()" title="Importar dados do CSV">📄</button>
@@ -166,6 +167,78 @@
           <button class="btn-full" onclick="salvarPrec()">Salvar como Ficha Técnica</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- VENDAS -->
+  <div class="page" id="page-vendas">
+    <div class="vendas-header">
+      <h2>Vendas</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-primary" onclick="abrirModalVendedor()">👤 Gerenciar Vendedores</button>
+      </div>
+    </div>
+
+    <div class="vendas-kpi" id="vendas-kpi"></div>
+
+    <div class="card" style="margin-bottom:1.5rem">
+      <h3>Registrar Venda</h3>
+      <div class="venda-form">
+        <div class="form-group">
+          <label class="form-label">Produto</label>
+          <select class="form-input" id="vf-produto" onchange="calcPrecoVenda()"><option value="">Selecione...</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Quantidade</label>
+          <input class="form-input" id="vf-qtd" type="number" min="1" value="1" oninput="calcPrecoVenda()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Vendedor</label>
+          <select class="form-input" id="vf-vendedor"><option value="">Selecione...</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Data</label>
+          <input class="form-input" id="vf-data" type="date">
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <div class="venda-preview" id="venda-preview"></div>
+        </div>
+        <button class="btn-full" style="margin:0;grid-column:1/-1" onclick="registrarVenda()">➕ Registrar Venda</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:1.5rem">
+      <h3>Gráfico Semanal</h3>
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:1rem;flex-wrap:wrap">
+        <label style="font-size:12px;font-weight:600;color:var(--muted)">Período:</label>
+        <input type="week" id="graf-semana" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px" onchange="renderGraficoSemanal()">
+      </div>
+      <div class="chart-wrap">
+        <canvas id="graf-canvas" height="280"></canvas>
+        <div class="chart-empty" id="chart-empty">Nenhuma venda no período</div>
+      </div>
+      <div class="chart-legend">
+        <span><span class="legend-bar" style="background:#5C6B46"></span> Receita Bruta</span>
+        <span><span class="legend-bar" style="background:#B83A00"></span> Retorno Líquido</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px">
+        <h3 style="margin:0">Vendas Registradas</h3>
+        <div style="display:flex;gap:8px">
+          <button class="btn-sm" onclick="exportarVendasCSV()">📥 Exportar CSV</button>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table class="stock-table" id="vendas-table">
+          <thead><tr>
+            <th>Data</th><th>Produto</th><th style="text-align:right">Qtd</th><th style="text-align:right">Receita</th><th style="text-align:right">Custo</th><th style="text-align:right">Retorno</th><th>Vendedor</th><th style="text-align:right">Ações</th>
+          </tr></thead>
+          <tbody id="vendas-tbody"></tbody>
+        </table>
+      </div>
+      <div class="ins-empty" id="vendas-empty" style="display:none">Nenhuma venda registrada.</div>
     </div>
   </div>
 
@@ -317,6 +390,28 @@
         </div>
       </div>
 
+    </div>
+  </div>
+</div>
+
+<!-- MODAL VENDEDOR -->
+<div class="modal-overlay" id="modal-vendedor" onclick="if(event.target.id==='modal-vendedor')fecharModalVendedor()">
+  <div class="modal" style="width:550px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-cat">Comissões</div>
+        <div class="modal-nome">Gerenciar Vendedores</div>
+      </div>
+      <button class="modal-close" onclick="fecharModalVendedor()">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap">
+        <input class="form-input" id="vend-nome" placeholder="Nome do vendedor" style="flex:2;min-width:140px;font-size:13px">
+        <input class="form-input" id="vend-comissao" type="number" step="0.1" min="0" max="100" placeholder="% Comissão" style="width:120px;font-size:13px">
+        <button class="btn-primary" onclick="salvarVendedor()">Adicionar</button>
+      </div>
+      <div id="vend-lista"></div>
+      <div class="ins-empty" id="vend-empty" style="display:none">Nenhum vendedor cadastrado.</div>
     </div>
   </div>
 </div>
