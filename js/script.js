@@ -1685,34 +1685,27 @@ function resetarLogo(){
 
 // ==================== INIT ====================
 (async function init(){
+  carregarCategorias();
+  popularSelectCat();
+  if(!carregarDados() || !PRODUTOS.length){
+    PRODUTOS = PRODUTOS.map(recalcularProduto);
+  } else {
+    PRODUTOS.forEach(p => { p.pctOp = 0; });
+    PRODUTOS = PRODUTOS.map(recalcularProduto);
+  }
+  if(!carregarIngredientes() || !INGREDIENTES.length){
+    INGREDIENTES = inicializarIngredientes().map(recalcularEstoque);
+  }
+  carregarVendas();
+  carregarVendedores();
+  carregarLogo();
   const supabaseOk = await carregarSupabase();
   if(supabaseOk){
     salvarCategorias();
-    popularSelectCat();
     salvarDados();
     salvarIngredientes();
     salvarVendas();
     salvarVendedores();
-    carregarLogo();
-  } else {
-    if(!carregarCategorias() || !CATEGORIAS.length){
-      salvarCategorias();
-    }
-    popularSelectCat();
-    if(!carregarDados() || !PRODUTOS.length){
-      PRODUTOS = PRODUTOS.map(recalcularProduto);
-      salvarDados();
-    } else {
-      PRODUTOS.forEach(p => { p.pctOp = 0; });
-      PRODUTOS = PRODUTOS.map(recalcularProduto);
-      salvarDados();
-    }
-    if(!carregarIngredientes() || !INGREDIENTES.length){
-      INGREDIENTES = inicializarIngredientes().map(recalcularEstoque);
-      salvarIngredientes();
-    }
-    carregarVendas();
-    carregarVendedores();
     carregarLogo();
   }
   renderDashboard();
