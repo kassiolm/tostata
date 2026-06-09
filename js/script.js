@@ -238,6 +238,7 @@
 let filtroAtual = 'todos';
 let produtoAtual = null;
 let produtoEditandoId = null;
+let editandoVendaId = null;
 let ingPrecList = [];
 
 function br(v){return typeof v==='number'?'R$ '+v.toFixed(2).replace('.',','):'R$ 0,00';}
@@ -301,7 +302,7 @@ function goPage(p){
   if(p==='fichas') renderFichas();
   if(p==='insumos') renderInsumos();
   if(p==='precificador'){ produtoEditandoId = null; popularSelectCat(); popularSelectIng(); calcPrec(); }
-  if(p==='vendas') renderVendas();
+  if(p==='vendas'){ editandoVendaId = null; renderVendas(); }
 }
 
 let catEditandoId = null;
@@ -502,13 +503,11 @@ function renderDashboard(){
   const avgCmv = total ? PRODUTOS.reduce((s,p)=>s+p.cmv,0)/total : 0;
   const lucroTotal = PRODUTOS.reduce((s,p)=>s+p.lucro,0);
   const cmvClass = avgCmv<25?'green':avgCmv<40?'yellow':'';
-  const totalCaixas = VENDAS.filter(v=>v.viagem).reduce((s,v)=>s+(v.qtdCaixas||0),0);
   document.getElementById('kpi-grid').innerHTML = `
     <div class="kpi accent"><div class="kpi-label">Total de Produtos</div><div class="kpi-value">${total}</div></div>
     <div class="kpi green"><div class="kpi-label">Margem Média</div><div class="kpi-value">${avgMargem.toFixed(1)}%</div></div>
     <div class="kpi ${cmvClass?'kpi '+cmvClass:'kpi'}"><div class="kpi-label">CMV Médio</div><div class="kpi-value">${avgCmv.toFixed(1)}%</div></div>
     <div class="kpi"><div class="kpi-label">Lucro Total</div><div class="kpi-value">${br(lucroTotal)}</div></div>
-    <div class="kpi" style="grid-column:1/-1;margin-top:0.5rem"><div class="kpi-label">Caixas usadas (total)</div><div class="kpi-value">${totalCaixas} un</div></div>
   `;
   const sorted = [...PRODUTOS].sort((a,b)=>b.margem-a.margem);
   document.getElementById('rank-margem').innerHTML = sorted.map((p,i)=>`
@@ -1337,8 +1336,8 @@ function registrarVenda(){
   const pctCom = v ? v.comissaoPct : 30;
   const com = rec * pctCom / 100;
   const ret = rec - cst - com;
-  VENDAS.push({
-    id: Date.now(),
+  const obj = {
+    id: editandoVendaId || Date.now(),
     data: data || new Date().toISOString().slice(0,10),
     itens: [{ produtoId: p.id, qtd, nome: p.nome, precoVenda: p.precoVenda, custoProducao: p.custoProducao }],
     vendedorId: vid || null,
@@ -1350,8 +1349,16 @@ function registrarVenda(){
     comRestaurante: v ? 0 : +com.toFixed(2),
     comVendedor: v ? +com.toFixed(2) : 0,
     retornoLiquido: +ret.toFixed(2)
-  });
+  };
+  if(editandoVendaId){
+    const idx = VENDAS.findIndex(x=>x.id===editandoVendaId);
+    if(idx!==-1) VENDAS[idx] = obj;
+  } else {
+    VENDAS.push(obj);
+  }
+  editandoVendaId = null;
   salvarVendas();
+  document.getElementById('btn-registrar-venda').innerHTML = '➕ Registrar Venda';
   document.getElementById('vf-produto').value = '';
   document.getElementById('vf-qtd').value = '1';
   document.getElementById('vf-vendedor').value = '';
@@ -1390,23 +1397,21 @@ function renderTabelaVendas(){
   `).join('');
 }
 function editarVenda(id){
-  const idx = VENDAS.findIndex(v=>v.id===id);
-  if(idx===-1) return;
-  const v = VENDAS[idx];
+  const v = VENDAS.find(v=>v.id===id);
+  if(!v) return;
   const item = v.itens[0];
+  editandoVendaId = id;
   document.getElementById('vf-produto').value = item.produtoId || '';
   document.getElementById('vf-qtd').value = item.qtd;
   document.getElementById('vf-vendedor').value = v.vendedorId || '';
   document.getElementById('vf-data').value = v.data;
   document.getElementById('vf-viagem').checked = !!v.viagem;
   document.getElementById('vf-qtd-caixas').value = v.qtdCaixas||0;
-  VENDAS.splice(idx,1);
-  salvarVendas();
-  renderVendas();
+  document.getElementById('btn-registrar-venda').innerHTML = '✏️ Atualizar Venda';
   calcPrecoVenda();
   document.getElementById('vf-produto').focus();
   window.scrollTo({ top: document.querySelector('.venda-form').offsetTop - 100, behavior: 'smooth' });
-  toast('Venda carregada para edição. Ajuste e registre novamente.','ok');
+  toast('Editando venda. Confirme para salvar.','ok');
 }
 function excluirVenda(id){
   if(!confirm('Excluir esta venda?')) return;
