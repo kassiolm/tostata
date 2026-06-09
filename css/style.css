@@ -39,7 +39,7 @@
   }
   .logo {
     font-family: 'DM Serif Display', serif;
-    font-size: 1.5rem;
+    font-size: 1.95rem;
     letter-spacing: 0.04em;
     color: #F5F2EB;
     cursor: pointer;
@@ -49,7 +49,7 @@
     user-select: none;
   }
   .logo span { color: #D4835A; }
-  .logo img { max-height: 44px; width: auto; border-radius: 4px; }
+  .logo img { max-height: 57px; width: auto; border-radius: 4px; }
   .logo .logo-text { display: inline; }
   .nav-tabs {
     display: flex;
@@ -323,12 +323,12 @@
     .fichas-grid { grid-template-columns: 1fr; }
     .precif-layout { grid-template-columns: 1fr; }
     .topbar { padding: 0 0.75rem; flex-wrap: nowrap; height: 56px; gap: 4px; overflow-x: auto; }
-    .topbar .logo { font-size: 1.1rem; white-space: nowrap; }
+    .topbar .logo { font-size: 1.43rem; white-space: nowrap; }
     .topbar-actions { gap: 2px; }
     .topbar-btn { padding: 6px 8px; font-size: 15px; min-width: 36px; min-height: 36px; }
     .main { padding: 1rem; }
     .page.active { padding-bottom: 80px; }
-    .logo { font-size: 1.1rem; }
+    .logo { font-size: 1.43rem; }
     .nav-tabs { flex-shrink: 0; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }
     .nav-tabs::-webkit-scrollbar { display: none; }
     .nav-tab { padding: 8px 12px; font-size: 12px; white-space: nowrap; min-height: 36px; }
@@ -372,7 +372,7 @@
     .kpi-grid { grid-template-columns: 1fr 1fr; gap: 0.5rem; }
     .ins-resumo { grid-template-columns: 1fr 1fr; gap: 0.5rem; }
     .topbar { padding: 0 0.5rem; height: 50px; }
-    .topbar .logo { font-size: 0.95rem; }
+    .topbar .logo { font-size: 1.24rem; }
     .nav-tab { padding: 6px 8px; font-size: 11px; }
     .topbar-btn { padding: 4px 6px; font-size: 13px; min-width: 32px; min-height: 32px; }
     .main { padding: 0.75rem; }

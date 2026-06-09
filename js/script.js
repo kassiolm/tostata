@@ -1422,7 +1422,7 @@ function uploadLogo(ev){
   reader.onload = function(e){
     const img = new Image();
     img.onload = function(){
-      const maxW = 180, maxH = 50;
+      const maxW = 234, maxH = 65;
       let w = img.width, h = img.height;
       if(w > maxW){ h = h * maxW / w; w = maxW; }
       if(h > maxH){ w = w * maxH / h; h = maxH; }
