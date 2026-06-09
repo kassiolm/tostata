@@ -1149,7 +1149,8 @@ function salvarVendedor(){
   const com = parseFloat(document.getElementById('vend-comissao').value);
   if(!nome) return toast('Informe o nome do vendedor','');
   if(isNaN(com)||com<0||com>100) return toast('Informe uma comissão válida (0-100%)','');
-  if(vendIdEdit){
+  const editando = !!vendIdEdit;
+  if(editando){
     const v = VENDEDORES.find(x=>x.id===vendIdEdit);
     if(v){ v.nome = nome; v.comissaoPct = com; }
   } else {
@@ -1160,7 +1161,8 @@ function salvarVendedor(){
   document.getElementById('vend-nome').value = '';
   document.getElementById('vend-comissao').value = '';
   renderListaVendedores();
-  toast(vendIdEdit?'Vendedor atualizado!':'Vendedor cadastrado!','ok');
+  popularSelectVendedor();
+  toast(editando?'Vendedor atualizado!':'Vendedor cadastrado!','ok');
 }
 function editarVendedor(id){
   const v = VENDEDORES.find(x=>x.id===id);
@@ -1174,6 +1176,7 @@ function excluirVendedor(id){
   VENDEDORES = VENDEDORES.filter(x=>x.id!==id);
   salvarVendedores();
   renderListaVendedores();
+  popularSelectVendedor();
   toast('Vendedor excluído','ok');
 }
 
