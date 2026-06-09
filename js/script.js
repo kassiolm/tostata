@@ -1328,6 +1328,7 @@ function registrarVenda(){
   const qtdCaixas = viagem ? parseInt(document.getElementById('vf-qtd-caixas')?.value)||0 : 0;
   if(!pid) return toast('Selecione um produto','');
   if(qtd<1) return toast('Quantidade inválida','');
+  if(!vid) return toast('Selecione um vendedor','');
   const p = PRODUTOS.find(x=>x.id==pid);
   if(!p) return toast('Produto não encontrado','');
   const v = VENDEDORES.find(x=>x.id==vid);
