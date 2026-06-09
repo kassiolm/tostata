@@ -594,6 +594,7 @@ function atualizarPreco(){
 
 function editarProduto(){
   if(!produtoAtual) return;
+  const id = produtoAtual.id;
   document.getElementById('p-nome').value = produtoAtual.nome;
   document.getElementById('p-cat').value = produtoAtual.cat;
   document.getElementById('p-embal').value = produtoAtual.subEmbalagens || 3.95;
@@ -603,7 +604,7 @@ function editarProduto(){
   ingPrecList = (produtoAtual.ingredientes||[]).map(i=>({nome:i.nome,qtd:i.qtd,custo:i.custoUnit,total:i.total}));
   fecharModalBtn();
   goPage('precificador');
-  produtoEditandoId = produtoAtual.id;
+  produtoEditandoId = id;
   calcPrec();
 }
 
