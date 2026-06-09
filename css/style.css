@@ -421,6 +421,11 @@
     .venda-form { grid-template-columns:1fr; }
   }
 
+  .cat-item { display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-bottom:1px solid var(--border); }
+  .cat-item:last-child { border-bottom:none; }
+  .cat-actions { display:flex; gap:6px; }
+  .cat-actions .btn-sm { padding:4px 8px; font-size:13px; min-height:32px; }
+
   #toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:600;z-index:9999;opacity:0;transition:opacity .3s ease,transform .3s ease;pointer-events:none;box-shadow:0 4px 20px rgba(0,0,0,0.2)}
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
 }

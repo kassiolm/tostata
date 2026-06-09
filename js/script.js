@@ -252,6 +252,12 @@ function toast(msg,type){
   el._t=setTimeout(()=>el.classList.remove('show'),3000);
 }
 
+function popularSelectCat(){
+  const sel = document.getElementById('p-cat');
+  if(!sel) return;
+  sel.innerHTML = CATEGORIAS.map(c => `<option value="${c.key}">${c.label}</option>`).join('');
+}
+
 function popularSelectIng(){
   const sel = document.getElementById('ing-select');
   if(!sel) return;
@@ -294,8 +300,96 @@ function goPage(p){
   if(p==='dashboard') renderDashboard();
   if(p==='fichas') renderFichas();
   if(p==='insumos') renderInsumos();
-  if(p==='precificador'){ produtoEditandoId = null; popularSelectIng(); calcPrec(); }
+  if(p==='precificador'){ produtoEditandoId = null; popularSelectCat(); popularSelectIng(); calcPrec(); }
   if(p==='vendas') renderVendas();
+}
+
+let catEditandoId = null;
+
+function abrirModalCategoria(){
+  catEditandoId = null;
+  document.getElementById('cat-nome').value = '';
+  document.getElementById('cat-key').value = '';
+  document.getElementById('cat-modal-title').textContent = 'Nova Categoria';
+  document.getElementById('cat-salvar-btn').textContent = 'Adicionar';
+  renderListaCategorias();
+  document.getElementById('modal-categoria').classList.add('open');
+  lockScroll(true);
+}
+function fecharModalCategoria(){
+  document.getElementById('modal-categoria').classList.remove('open');
+  lockScroll(false);
+}
+function renderListaCategorias(){
+  const el = document.getElementById('cat-list');
+  if(!el) return;
+  if(!CATEGORIAS.length){
+    el.innerHTML = '<div style="color:var(--muted);padding:12px">Nenhuma categoria</div>';
+    return;
+  }
+  el.innerHTML = CATEGORIAS.map(c => `
+    <div class="cat-item">
+      <span><strong>${c.label}</strong> <span style="color:var(--muted);font-size:12px">(${c.key})</span></span>
+      <div class="cat-actions">
+        <button class="btn-sm" onclick="editarCategoria(${c.id})">✏️</button>
+        <button class="btn-sm" style="background:var(--red)" onclick="excluirCategoria(${c.id})">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+function editarCategoria(id){
+  const c = CATEGORIAS.find(x=>x.id===id);
+  if(!c) return;
+  catEditandoId = id;
+  document.getElementById('cat-nome').value = c.label;
+  document.getElementById('cat-key').value = c.key;
+  document.getElementById('cat-modal-title').textContent = 'Editar Categoria';
+  document.getElementById('cat-salvar-btn').textContent = 'Salvar';
+}
+function excluirCategoria(id){
+  const c = CATEGORIAS.find(x=>x.id===id);
+  if(!c) return;
+  const usada = PRODUTOS.some(p=>p.cat===c.key);
+  if(usada && !confirm(`"${c.label}" está em uso por ${PRODUTOS.filter(p=>p.cat===c.key).length} produto(s). Excluir mesmo assim?`)) return;
+  CATEGORIAS = CATEGORIAS.filter(x=>x.id!==id);
+  if(filtroAtual===c.key) filtroAtual='todos';
+  salvarCategorias();
+  renderListaCategorias();
+  popularSelectCat();
+  renderFichas();
+  toast(`"${c.label}" excluída`,'ok');
+}
+function salvarCategoria(){
+  const nome = document.getElementById('cat-nome').value.trim();
+  const key = document.getElementById('cat-key').value.trim().toLowerCase().replace(/\s+/g,'_');
+  if(!nome || !key) return toast('Preencha nome e chave','');
+  if(catEditandoId){
+    const c = CATEGORIAS.find(x=>x.id===catEditandoId);
+    if(!c) return;
+    const dup = CATEGORIAS.some(x=>x.id!==catEditandoId && x.key===key);
+    if(dup) return toast('Chave já existe','');
+    const keyAntiga = c.key;
+    c.label = nome;
+    c.key = key;
+    if(keyAntiga !== key){
+      PRODUTOS.filter(p=>p.cat===keyAntiga).forEach(p=>{ p.cat = key; });
+      salvarDados();
+    }
+    toast(`"${nome}" atualizada`,'ok');
+  } else {
+    if(CATEGORIAS.some(x=>x.key===key)) return toast('Chave já existe','');
+    CATEGORIAS.push({id:Date.now(),key,label:nome});
+    toast(`"${nome}" adicionada`,'ok');
+  }
+  salvarCategorias();
+  popularSelectCat();
+  renderFichas();
+  renderListaCategorias();
+  document.getElementById('cat-nome').value = '';
+  document.getElementById('cat-key').value = '';
+  catEditandoId = null;
+  document.getElementById('cat-modal-title').textContent = 'Nova Categoria';
+  document.getElementById('cat-salvar-btn').textContent = 'Adicionar';
 }
 
 function setFiltro(f){
@@ -382,6 +476,11 @@ function atualizarBadgeFichas(){
 }
 
 function renderFichas(){
+  const filterBar = document.getElementById('fichas-filters');
+  if(filterBar){
+    filterBar.innerHTML = `<button class="filter-btn ${filtroAtual==='todos'?'active':''}" id="f-todos" onclick="setFiltro('todos')">Todos</button>`
+      + CATEGORIAS.map(c => `<button class="filter-btn ${filtroAtual===c.key?'active':''}" id="f-${c.key}" onclick="setFiltro('${c.key}')">${c.label}</button>`).join('');
+  }
   const q = (document.getElementById('search-input')?.value||'').toLowerCase();
   let lista = PRODUTOS;
   if(filtroAtual!=='todos') lista = lista.filter(p=>p.cat===filtroAtual);
@@ -598,6 +697,7 @@ function atualizarPreco(){
 function editarProduto(){
   if(!produtoAtual) return;
   const id = produtoAtual.id;
+  popularSelectCat();
   document.getElementById('p-nome').value = produtoAtual.nome;
   document.getElementById('p-cat').value = produtoAtual.cat;
   document.getElementById('p-embal').value = produtoAtual.subEmbalagens || 3.95;
@@ -632,6 +732,23 @@ let insumoModo = 'view'; // 'view' | 'form'
 let insumoEditId = null;
 
 const CAT_LABEL = {massas:"Massas",queijos:"Queijos",embutidos:"Embutidos",molhos:"Molhos",temperos:"Temperos",doces:"Doces",vegetais:"Vegetais",embalagens:"Embalagens",outros:"Outros"};
+
+let CATEGORIAS = [
+  {id:1,key:'pizza',label:'Pizza'},
+  {id:2,key:'panuozzo',label:'Panuozzo'},
+  {id:3,key:'napolidog',label:'Napolidog'}
+];
+
+function salvarCategorias(){
+  try{ localStorage.setItem('tostata_categorias', JSON.stringify(CATEGORIAS)); }catch(e){}
+}
+function carregarCategorias(){
+  try{
+    const d = localStorage.getItem('tostata_categorias');
+    if(d){ CATEGORIAS = JSON.parse(d); return true; }
+  }catch(e){}
+  return false;
+}
 
 // Dados completos extraídos da planilha (Ingredientes, Controle de Estoque, Fichas Técnicas)
 const INGREDIENTES_CSV = [
@@ -1462,6 +1579,10 @@ function resetarLogo(){
 }
 
 // ==================== INIT ====================
+if(!carregarCategorias() || !CATEGORIAS.length){
+  salvarCategorias();
+}
+popularSelectCat();
 if(!carregarDados() || !PRODUTOS.length){
   PRODUTOS = PRODUTOS.map(recalcularProduto);
   salvarDados();

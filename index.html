@@ -63,10 +63,7 @@
       <h2>Fichas Técnicas</h2>
       <div class="search-bar">
         <input type="text" id="search-input" placeholder="Buscar produto..." oninput="renderFichas()">
-        <button class="filter-btn active" id="f-todos" onclick="setFiltro('todos')">Todos</button>
-        <button class="filter-btn" id="f-pizza" onclick="setFiltro('pizza')">Pizzas</button>
-        <button class="filter-btn" id="f-panuozzo" onclick="setFiltro('panuozzo')">Panuozzos</button>
-        <button class="filter-btn" id="f-napolidog" onclick="setFiltro('napolidog')">Napolidogs</button>
+        <div class="fichas-filters" id="fichas-filters"></div>
       </div>
     </div>
     <div class="fichas-grid" id="fichas-grid"></div>
@@ -115,11 +112,8 @@
           </div>
           <div class="form-group">
             <label class="form-label">Categoria</label>
-            <select class="form-input" id="p-cat" onchange="calcPrec()">
-              <option value="pizza">Pizza</option>
-              <option value="panuozzo">Panuozzo</option>
-              <option value="napolidog">Napolidog</option>
-            </select>
+            <select class="form-input" id="p-cat" onchange="calcPrec()"></select>
+            <button class="btn-sm" style="margin-top:4px;background:var(--muted);color:var(--text)" onclick="abrirModalCategoria()">⚙️ Gerenciar Categorias</button>
           </div>
         </div>
         <div class="card" style="margin-bottom:1rem">
@@ -280,6 +274,34 @@
       <div style="display:flex;gap:8px;margin-top:12px">
         <button class="btn-primary" style="flex:1;background:var(--text)" onclick="editarProduto()">✏️ Editar no Precificador</button>
         <button class="btn-primary" style="flex:1;background:var(--red)" onclick="excluirProduto()">🗑️ Excluir</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CATEGORIA -->
+<div class="modal-overlay" id="modal-categoria" onclick="if(event.target.id==='modal-categoria')fecharModalCategoria()">
+  <div class="modal" style="width:500px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-cat">Categorias</div>
+        <div class="modal-nome" id="cat-modal-title">Nova Categoria</div>
+      </div>
+      <button class="modal-close" onclick="fecharModalCategoria()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Nome</label>
+        <input class="form-input" id="cat-nome" placeholder="Ex: Pizzas">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Chave (identificador único)</label>
+        <input class="form-input" id="cat-key" placeholder="Ex: pizza">
+      </div>
+      <button class="btn-full" id="cat-salvar-btn" onclick="salvarCategoria()">Adicionar</button>
+      <div style="margin-top:1rem">
+        <label class="form-label" style="margin-bottom:6px">Categorias existentes</label>
+        <div id="cat-list"></div>
       </div>
     </div>
   </div>
