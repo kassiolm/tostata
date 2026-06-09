@@ -197,6 +197,11 @@
           <label class="form-label">Data</label>
           <input class="form-input" id="vf-data" type="date">
         </div>
+        <div class="form-group" style="display:flex;align-items:center;gap:8px;padding-top:4px">
+          <input type="checkbox" id="vf-viagem" onchange="calcPrecoVenda()" style="width:18px;height:18px;accent-color:var(--green);cursor:pointer">
+          <label for="vf-viagem" style="font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">Pra viagem 🥡</label>
+          <input type="number" id="vf-preco-caixa" value="0" min="0" step="0.5" style="width:70px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:inherit" title="Preço da caixa" oninput="calcPrecoVenda()">
+        </div>
         <div class="form-group" style="grid-column:1/-1">
           <div class="venda-preview" id="venda-preview"></div>
         </div>
@@ -232,7 +237,7 @@
       <div class="table-scroll">
         <table class="stock-table" id="vendas-table">
           <thead><tr>
-            <th>Data</th><th>Produto</th><th style="text-align:right">Qtd</th><th style="text-align:right">Receita</th><th style="text-align:right">Custo</th><th style="text-align:right">Comissão</th><th style="text-align:right">Retorno</th><th>Vendedor</th><th style="text-align:right">Ações</th>
+            <th>Data</th><th>Produto</th><th style="text-align:right">Qtd</th><th style="text-align:right">Receita</th><th style="text-align:right">Custo</th><th style="text-align:right">Caixa</th><th style="text-align:right">Comissão</th><th style="text-align:right">Retorno</th><th>Vendedor</th><th style="text-align:right">Ações</th>
           </tr></thead>
           <tbody id="vendas-tbody"></tbody>
         </table>

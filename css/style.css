@@ -397,7 +397,7 @@
   }
   .vendas-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; flex-wrap:wrap; gap:12px; }
   .vendas-header h2 { font-family:'DM Serif Display',serif; font-size:1.8rem; font-weight:400; }
-  .vendas-kpi { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:1.5rem; }
+  .vendas-kpi { display:grid; grid-template-columns:repeat(5,1fr); gap:1rem; margin-bottom:1.5rem; }
   .venda-form { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; align-items:end; }
   .venda-preview { background:var(--surface2); border-radius:8px; padding:12px 16px; font-size:13px; display:flex; gap:16px; flex-wrap:wrap; }
   .venda-preview span { white-space:nowrap; }

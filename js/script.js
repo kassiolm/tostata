@@ -502,11 +502,14 @@ function renderDashboard(){
   const avgCmv = total ? PRODUTOS.reduce((s,p)=>s+p.cmv,0)/total : 0;
   const lucroTotal = PRODUTOS.reduce((s,p)=>s+p.lucro,0);
   const cmvClass = avgCmv<25?'green':avgCmv<40?'yellow':'';
+  const totalCaixas = VENDAS.filter(v=>v.viagem).reduce((s,v)=>s+v.itens.reduce((a,i)=>a+i.qtd,0),0);
+  const custoCaixas = VENDAS.reduce((s,v)=>s+(v.custoCaixa||0),0);
   document.getElementById('kpi-grid').innerHTML = `
     <div class="kpi accent"><div class="kpi-label">Total de Produtos</div><div class="kpi-value">${total}</div></div>
     <div class="kpi green"><div class="kpi-label">Margem Média</div><div class="kpi-value">${avgMargem.toFixed(1)}%</div></div>
     <div class="kpi ${cmvClass?'kpi '+cmvClass:'kpi'}"><div class="kpi-label">CMV Médio</div><div class="kpi-value">${avgCmv.toFixed(1)}%</div></div>
     <div class="kpi"><div class="kpi-label">Lucro Total</div><div class="kpi-value">${br(lucroTotal)}</div></div>
+    <div class="kpi" style="grid-column:1/-1;margin-top:0.5rem"><div class="kpi-label">Caixas usadas (custo total)</div><div class="kpi-value">${totalCaixas} un (${br(custoCaixas)})</div></div>
   `;
   const sorted = [...PRODUTOS].sort((a,b)=>b.margem-a.margem);
   document.getElementById('rank-margem').innerHTML = sorted.map((p,i)=>`
@@ -1263,6 +1266,8 @@ function calcPrecoVenda(){
   const sel = document.getElementById('vf-produto');
   const qtd = parseFloat(document.getElementById('vf-qtd').value)||1;
   const vid = document.getElementById('vf-vendedor').value;
+  const viagem = document.getElementById('vf-viagem')?.checked||false;
+  const precoCaixa = parseFloat(document.getElementById('vf-preco-caixa')?.value)||0;
   const preview = document.getElementById('venda-preview');
   if(!sel.value||!preview) return preview.innerHTML='';
   const p = PRODUTOS.find(x=>x.id==sel.value);
@@ -1272,11 +1277,13 @@ function calcPrecoVenda(){
   const cst = qtd * p.custoProducao;
   const pctCom = v ? v.comissaoPct : 30;
   const com = rec * pctCom / 100;
-  const ret = rec - cst - com;
+  const custoCaixa = viagem ? precoCaixa * qtd : 0;
+  const ret = rec - cst - com - custoCaixa;
   preview.innerHTML = `
     <span><span class="vp-label">Receita</span> <span class="vp-val">${br(rec)}</span></span>
     <span><span class="vp-label">Custo</span> <span class="vp-val">${br(cst)}</span></span>
     <span><span class="vp-label">Com. (${pctCom}%)</span> <span class="vp-val">${br(com)}</span></span>
+    ${viagem ? `<span><span class="vp-label">Caixa${custoCaixa?' ('+qtd+'x '+br(precoCaixa)+')':''}</span> <span class="vp-val">${br(custoCaixa)}</span></span>` : ''}
     <span style="font-weight:700;color:var(--green)"><span class="vp-label">Retorno</span> <span class="vp-val">${br(ret)}</span></span>
   `;
 }
@@ -1292,6 +1299,7 @@ function renderVendas(){
   popularSelectVendedor();
   const hoje = new Date().toISOString().slice(0,10);
   document.getElementById('vf-data').value = hoje;
+  document.getElementById('vf-preco-caixa').value = localStorage.getItem('tostata_preco_caixa')||'0';
   const wk = getWeek(hoje);
   document.getElementById('graf-semana-de').value = wk;
   document.getElementById('graf-semana-ate').value = wk;
@@ -1305,10 +1313,12 @@ function renderKPIVendas(){
   const totalRec = VENDAS.reduce((s,v)=>s+v.receitaBruta,0);
   const totalCst = VENDAS.reduce((s,v)=>s+v.custoTotal,0);
   const totalCom = VENDAS.reduce((s,v)=>s+v.comRestaurante+v.comVendedor,0);
+  const totalCx = VENDAS.reduce((s,v)=>s+(v.custoCaixa||0),0);
   const totalRet = VENDAS.reduce((s,v)=>s+v.retornoLiquido,0);
   el.innerHTML = `
     <div class="kpi accent"><div class="kpi-label">Receita Bruta</div><div class="kpi-value">${br(totalRec)}</div></div>
-    <div class="kpi"><div class="kpi-label">Custo Total</div><div class="kpi-value">${br(totalCst)}</div></div>
+    <div class="kpi"><div class="kpi-label">Custo Insumos</div><div class="kpi-value">${br(totalCst)}</div></div>
+    <div class="kpi yellow"><div class="kpi-label">Caixas</div><div class="kpi-value">${br(totalCx)}</div></div>
     <div class="kpi yellow"><div class="kpi-label">Comissões</div><div class="kpi-value">${br(totalCom)}</div></div>
     <div class="kpi green"><div class="kpi-label">Retorno Líquido</div><div class="kpi-value">${br(totalRet)}</div></div>
   `;
@@ -1318,6 +1328,8 @@ function registrarVenda(){
   const qtd = parseInt(document.getElementById('vf-qtd').value)||0;
   const vid = document.getElementById('vf-vendedor').value;
   const data = document.getElementById('vf-data').value;
+  const viagem = document.getElementById('vf-viagem')?.checked||false;
+  const precoCaixa = parseFloat(document.getElementById('vf-preco-caixa')?.value)||0;
   if(!pid) return toast('Selecione um produto','');
   if(qtd<1) return toast('Quantidade inválida','');
   const p = PRODUTOS.find(x=>x.id==pid);
@@ -1327,23 +1339,35 @@ function registrarVenda(){
   const cst = qtd * p.custoProducao;
   const pctCom = v ? v.comissaoPct : 30;
   const com = rec * pctCom / 100;
-  const ret = rec - cst - com;
+  const custoCaixa = viagem ? precoCaixa * qtd : 0;
+  const ret = rec - cst - com - custoCaixa;
   VENDAS.push({
     id: Date.now(),
     data: data || new Date().toISOString().slice(0,10),
     itens: [{ produtoId: p.id, qtd, nome: p.nome, precoVenda: p.precoVenda, custoProducao: p.custoProducao }],
     vendedorId: vid || null,
     vendedorNome: v ? v.nome : '—',
+    viagem,
+    precoCaixa,
+    custoCaixa: +custoCaixa.toFixed(2),
     receitaBruta: +rec.toFixed(2),
     custoTotal: +cst.toFixed(2),
     comRestaurante: v ? 0 : +com.toFixed(2),
     comVendedor: v ? +com.toFixed(2) : 0,
     retornoLiquido: +ret.toFixed(2)
   });
+  if(viagem && precoCaixa > 0){
+    try{
+      const preco = parseFloat(localStorage.getItem('tostata_preco_caixa')||'0');
+      if(!preco) localStorage.setItem('tostata_preco_caixa', String(precoCaixa));
+    }catch(e){}
+  }
   salvarVendas();
   document.getElementById('vf-produto').value = '';
   document.getElementById('vf-qtd').value = '1';
   document.getElementById('vf-vendedor').value = '';
+  document.getElementById('vf-viagem').checked = false;
+  document.getElementById('vf-preco-caixa').value = localStorage.getItem('tostata_preco_caixa')||'0';
   document.getElementById('venda-preview').innerHTML = '';
   renderVendas();
   toast(`Venda registrada: ${p.nome} x${qtd} — Retorno ${br(ret)}`,'ok');
@@ -1365,6 +1389,7 @@ function renderTabelaVendas(){
       <td style="text-align:right">${v.itens.reduce((s,i)=>s+i.qtd,0)}</td>
       <td style="text-align:right">${br(v.receitaBruta)}</td>
       <td style="text-align:right">${br(v.custoTotal)}</td>
+      <td style="text-align:right;color:${v.viagem?'var(--muted)':'#ccc'};font-size:${v.viagem?'':'0'}">${v.viagem?br(v.custoCaixa||0)+' 🥡':'—'}</td>
       <td style="text-align:right;color:var(--accent)">${br(v.comRestaurante+v.comVendedor)}</td>
       <td style="text-align:right;font-weight:600;color:${v.retornoLiquido>=0?'var(--green)':'var(--red)'}">${br(v.retornoLiquido)}</td>
       <td>${v.vendedorNome}</td>
@@ -1384,6 +1409,8 @@ function editarVenda(id){
   document.getElementById('vf-qtd').value = item.qtd;
   document.getElementById('vf-vendedor').value = v.vendedorId || '';
   document.getElementById('vf-data').value = v.data;
+  document.getElementById('vf-viagem').checked = !!v.viagem;
+  document.getElementById('vf-preco-caixa').value = v.precoCaixa || localStorage.getItem('tostata_preco_caixa')||'0';
   VENDAS.splice(idx,1);
   salvarVendas();
   renderVendas();
@@ -1401,9 +1428,9 @@ function excluirVenda(id){
 }
 function exportarVendasCSV(){
   if(!VENDAS.length) return toast('Nenhuma venda para exportar','');
-  let csv = 'Data,Produto(s),Qtd,Receita Bruta,Custo Insumos,Comissão,Retorno Líquido,Vendedor\n';
+  let csv = 'Data,Produto(s),Qtd,Receita Bruta,Custo Insumos,Caixa,Comissão,Retorno Líquido,Vendedor\n';
   VENDAS.forEach(v => {
-    csv += `${v.data},"${v.itens.map(i=>i.nome+' x'+i.qtd).join('; ')}",${v.itens.reduce((s,i)=>s+i.qtd,0)},${v.receitaBruta},${v.custoTotal},${+(v.comRestaurante+v.comVendedor).toFixed(2)},${v.retornoLiquido},"${v.vendedorNome}"\n`;
+    csv += `${v.data},"${v.itens.map(i=>i.nome+' x'+i.qtd).join('; ')}",${v.itens.reduce((s,i)=>s+i.qtd,0)},${v.receitaBruta},${v.custoTotal},${v.viagem?+(v.custoCaixa||0).toFixed(2):0},${+(v.comRestaurante+v.comVendedor).toFixed(2)},${v.retornoLiquido},"${v.vendedorNome}"\n`;
   });
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
