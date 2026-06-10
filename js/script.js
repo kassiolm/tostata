@@ -857,6 +857,7 @@ function editarProduto(){
   if(!produtoAtual) return;
   const id = produtoAtual.id;
   popularSelectCat();
+  popularSelectEmbalagem();
   document.getElementById('p-nome').value = produtoAtual.nome;
   document.getElementById('p-cat').value = produtoAtual.cat;
   const temEmb = (produtoAtual.embalagens||[]).length > 0;
