@@ -91,7 +91,13 @@
       </div>
       <table class="stock-table">
         <thead><tr>
-          <th>Insumo</th><th>Categoria</th><th>Un</th><th>Estoque</th><th>Mínimo</th><th>Custo Médio</th><th>Status</th><th style="text-align:right">Ações</th>
+          <th onclick="sortToggle('insumos',0)" style="cursor:pointer">Insumo<span id="si-0"> ⇅</span></th>
+          <th onclick="sortToggle('insumos',1)" style="cursor:pointer">Categoria<span id="si-1"> ⇅</span></th>
+          <th onclick="sortToggle('insumos',2)" style="cursor:pointer">Un<span id="si-2"> ⇅</span></th>
+          <th onclick="sortToggle('insumos',3)" style="cursor:pointer;text-align:right">Estoque<span id="si-3"> ⇅</span></th>
+          <th onclick="sortToggle('insumos',4)" style="cursor:pointer;text-align:right">Mínimo<span id="si-4"> ⇅</span></th>
+          <th onclick="sortToggle('insumos',5)" style="cursor:pointer;text-align:right">Custo Médio<span id="si-5"> ⇅</span></th>
+          <th onclick="sortToggle('insumos',6)" style="cursor:pointer">Status<span id="si-6"> ⇅</span></th><th style="text-align:right">Ações</th>
         </tr></thead>
         <tbody id="ins-tbody"></tbody>
       </table>
@@ -160,7 +166,7 @@
           <div class="result-line"><span>Lucro por unidade</span><span id="r-lucro" style="font-weight:600">R$ 0,00</span></div>
           <div class="result-line"><span>CMV</span><span id="r-cmv">0%</span></div>
           <div class="result-line"><span>Status</span><span id="r-status">—</span></div>
-          <button class="btn-full" onclick="salvarPrec()">Salvar como Ficha Técnica</button>
+          <button class="btn-full" id="btn-salvar-prec" onclick="salvarPrec()">Salvar como Ficha Técnica</button>
         </div>
       </div>
     </div>
@@ -236,7 +242,16 @@
       <div class="table-scroll">
         <table class="stock-table" id="vendas-table">
           <thead><tr>
-            <th>Data</th><th>Produto</th><th style="text-align:right">Qtd</th><th style="text-align:right">Receita</th><th style="text-align:right">Custo</th><th style="text-align:right">Caixas</th><th style="text-align:right">Comissão</th><th style="text-align:right">Retorno</th><th>Vendedor</th><th style="text-align:right">Ações</th>
+            <th onclick="sortToggle('vendas',0)" style="cursor:pointer">Data<span id="sv-0"> ⇅</span></th>
+            <th onclick="sortToggle('vendas',1)" style="cursor:pointer">Produto<span id="sv-1"> ⇅</span></th>
+            <th onclick="sortToggle('vendas',2)" style="cursor:pointer;text-align:right">Qtd<span id="sv-2"> ⇅</span></th>
+            <th onclick="sortToggle('vendas',3)" style="cursor:pointer;text-align:right">Receita<span id="sv-3"> ⇅</span></th>
+            <th onclick="sortToggle('vendas',4)" style="cursor:pointer;text-align:right">Custo<span id="sv-4"> ⇅</span></th>
+            <th onclick="sortToggle('vendas',5)" style="cursor:pointer;text-align:right">Caixas<span id="sv-5"> ⇅</span></th>
+            <th onclick="sortToggle('vendas',6)" style="cursor:pointer;text-align:right">Comissão<span id="sv-6"> ⇅</span></th>
+            <th onclick="sortToggle('vendas',7)" style="cursor:pointer;text-align:right">Retorno<span id="sv-7"> ⇅</span></th>
+            <th onclick="sortToggle('vendas',8)" style="cursor:pointer">Vendedor<span id="sv-8"> ⇅</span></th>
+            <th style="text-align:right">Ações</th>
           </tr></thead>
           <tbody id="vendas-tbody"></tbody>
         </table>

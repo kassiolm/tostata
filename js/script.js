@@ -240,6 +240,48 @@ let produtoAtual = null;
 let produtoEditandoId = null;
 let editandoVendaId = null;
 let ingPrecList = [];
+let sortInsumos = { col:null, dir:'asc' };
+let sortVendas = { col:0, dir:'desc' };
+
+function sortToggle(t, col){
+  const s = t==='insumos'?sortInsumos:sortVendas;
+  if(s.col===col) s.dir=s.dir==='asc'?'desc':'asc';
+  else{ s.col=col; s.dir='asc'; }
+  if(t==='insumos') renderInsumos();
+  else renderTabelaVendas();
+}
+function sortArrow(t, col){
+  const s = t==='insumos'?sortInsumos:sortVendas;
+  return s.col===col ? (s.dir==='asc'?' ▲':' ▼') : ' ⇅';
+}
+function sortData(list, t){
+  const s = t==='insumos'?sortInsumos:sortVendas;
+  if(s.col===null) return list;
+  return [...list].sort((a,b)=>{
+    let va,vb;
+    if(t==='insumos'){
+      const valsA = [a.nome.toLowerCase(), (CAT_LABEL[a.categoria]||a.categoria||'').toLowerCase(),
+        (a.unidade||'').toLowerCase(), a.estoqueAtual||0, a.estoqueMinimo||0,
+        a.custoMedio||0, (statusEstoque(a).label||'')];
+      const valsB = [b.nome.toLowerCase(), (CAT_LABEL[b.categoria]||b.categoria||'').toLowerCase(),
+        (b.unidade||'').toLowerCase(), b.estoqueAtual||0, b.estoqueMinimo||0,
+        b.custoMedio||0, (statusEstoque(b).label||'')];
+      va=valsA[s.col]; vb=valsB[s.col];
+    } else {
+      const valsA = [a.data, a.itens.map(i=>i.nome).join(', ').toLowerCase(),
+        a.itens.reduce((s,i)=>s+i.qtd,0), a.receitaBruta, a.custoTotal,
+        a.viagem?a.qtdCaixas||0:0, +(a.comRestaurante+a.comVendedor).toFixed(2),
+        a.retornoLiquido, (a.vendedorNome||'').toLowerCase()];
+      const valsB = [b.data, b.itens.map(i=>i.nome).join(', ').toLowerCase(),
+        b.itens.reduce((s,i)=>s+i.qtd,0), b.receitaBruta, b.custoTotal,
+        b.viagem?b.qtdCaixas||0:0, +(b.comRestaurante+b.comVendedor).toFixed(2),
+        b.retornoLiquido, (b.vendedorNome||'').toLowerCase()];
+      va=valsA[s.col]; vb=valsB[s.col];
+    }
+    if(typeof va==='string') return s.dir==='asc'?va.localeCompare(vb):vb.localeCompare(va);
+    return s.dir==='asc'?va-vb:vb-va;
+  });
+}
 
 function br(v){return typeof v==='number'?'R$ '+v.toFixed(2).replace('.',','):'R$ 0,00';}
 
@@ -301,7 +343,7 @@ function goPage(p){
   if(p==='dashboard') renderDashboard();
   if(p==='fichas') renderFichas();
   if(p==='insumos') renderInsumos();
-  if(p==='precificador'){ produtoEditandoId = null; popularSelectCat(); popularSelectIng(); calcPrec(); }
+  if(p==='precificador'){ produtoEditandoId = null; const btn=document.getElementById('btn-salvar-prec'); if(btn) btn.textContent='Salvar como Ficha Técnica'; popularSelectCat(); popularSelectIng(); calcPrec(); }
   if(p==='vendas'){ editandoVendaId = null; renderVendas(); }
 }
 
@@ -691,6 +733,8 @@ function salvarPrec(){
   }
   salvarDados();
   produtoEditandoId = null;
+  const btn = document.getElementById('btn-salvar-prec');
+  if(btn) btn.textContent = 'Salvar como Ficha Técnica';
   ingPrecList = [];
   document.getElementById('p-nome').value='';
   document.getElementById('p-embal').value='3.95';
@@ -773,6 +817,8 @@ function editarProduto(){
   fecharModalBtn();
   goPage('precificador');
   produtoEditandoId = id;
+  const btn = document.getElementById('btn-salvar-prec');
+  if(btn) btn.textContent = '💾 Atualizar Ficha';
   calcPrec();
 }
 
@@ -937,6 +983,8 @@ function renderInsumos(){
     if(q && !ing.nome.toLowerCase().includes(q)) return false;
     return true;
   });
+  for(let i=0;i<7;i++){ const el=document.getElementById('si-'+i); if(el) el.textContent = sortArrow('insumos',i); }
+  lista = sortData(lista, 'insumos');
   const resumo = document.getElementById('ins-resumo');
   if(!resumo) return;
   const total = INGREDIENTES.length;
@@ -1379,7 +1427,9 @@ function renderTabelaVendas(){
     return;
   }
   if(empty) empty.style.display = 'none';
-  tbody.innerHTML = [...VENDAS].reverse().map(v => `
+  for(let i=0;i<9;i++){ const el=document.getElementById('sv-'+i); if(el) el.textContent = sortArrow('vendas',i); }
+  const lista = sortData(VENDAS, 'vendas');
+  tbody.innerHTML = lista.map(v => `
     <tr>
       <td style="white-space:nowrap">${v.data}</td>
       <td>${v.itens.map(i=>i.nome+' x'+i.qtd).join(', ')}</td>
