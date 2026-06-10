@@ -345,7 +345,7 @@ function goPage(p){
   if(p==='dashboard') renderDashboard();
   if(p==='fichas') renderFichas();
   if(p==='insumos') renderInsumos();
-  if(p==='precificador'){ produtoEditandoId = null; const btn=document.getElementById('btn-salvar-prec'); if(btn) btn.textContent='Salvar como Ficha Técnica'; popularSelectCat(); popularSelectIng(); calcPrec(); }
+  if(p==='precificador'){ produtoEditandoId = null; const btn=document.getElementById('btn-salvar-prec'); if(btn) btn.textContent='Salvar como Ficha Técnica'; const chk=document.getElementById('p-usar-emb'); if(chk) chk.checked=true; const embEl=document.getElementById('p-embal'); if(embEl&&!embEl.value) embEl.value=getEmbCusto(); popularSelectCat(); popularSelectIng(); calcPrec(); }
   if(p==='vendas'){ editandoVendaId = null; renderVendas(); }
 }
 
@@ -629,14 +629,20 @@ function renderFichas(){
   }).join('');
 }
 
+function getEmbCusto(){
+  const embs = (INGREDIENTES||[]).filter(i=>i.categoria==='embalagens');
+  return embs.length ? embs[0].custoMedio : 0;
+}
+
 function calcPrec(){
   const nome = document.getElementById('p-nome').value.trim()||'Novo Produto';
   const cat = document.getElementById('p-cat').value;
-  const emb = parseFloat(document.getElementById('p-embal').value)||0;
+  const usarEmb = document.getElementById('p-usar-emb')?.checked;
+  const emb = (usarEmb ? parseFloat(document.getElementById('p-embal').value) : 0)||0;
   const opPct = parseInt(document.getElementById('op-pct').value)||0;
   const preco = parseFloat(document.getElementById('p-preco').value)||0;
   const subIng = ingPrecList.reduce((s,i)=>s+(i.qtd||0)*(i.custo||0),0);
-  const subEmb = emb;
+  const subEmb = usarEmb ? emb : 0;
   const totalIns = subIng + subEmb;
   const custoOp = totalIns * opPct / 100;
   const custoTotal = totalIns + custoOp;
@@ -703,7 +709,8 @@ function salvarPrec(){
   const nome = document.getElementById('p-nome').value.trim();
   if(!nome) return toast('Informe o nome do produto','');
   const cat = document.getElementById('p-cat').value;
-  const emb = parseFloat(document.getElementById('p-embal').value)||0;
+  const usarEmb = document.getElementById('p-usar-emb')?.checked;
+  const emb = (usarEmb ? parseFloat(document.getElementById('p-embal').value) : 0)||0;
   const opPct = parseInt(document.getElementById('op-pct').value)||0;
   const preco = parseFloat(document.getElementById('p-preco').value)||0;
   if(ingPrecList.length===0) return toast('Adicione pelo menos um ingrediente','');
@@ -717,10 +724,10 @@ function salvarPrec(){
     const prod = PRODUTOS.find(p=>p.id===produtoEditandoId);
     prod.nome = nome; prod.cat = cat;
     prod.ingredientes = ingredients;
-    prod.embalagens = [{nome:'Embalagem',qtd:1,custoUnit:emb,total:emb}];
+    prod.embalagens = usarEmb ? [{nome:'Embalagem',qtd:1,custoUnit:emb,total:emb}] : [];
     prod.subIngredientes = subIng;
-    prod.subEmbalagens = emb;
-    prod.totalInsumos = subIng+emb;
+    prod.subEmbalagens = usarEmb ? emb : 0;
+    prod.totalInsumos = subIng + (usarEmb ? emb : 0);
     prod.pctOp = opPct; prod.custoOp = 0; prod.custoProducao = 0;
     prod.precoVenda = preco; prod.cmv = 0; prod.lucro = 0; prod.margem = 0;
     recalcularProduto(prod);
@@ -730,10 +737,10 @@ function salvarPrec(){
     const prod = {
       id, nome, cat,
       ingredientes: ingredients,
-      embalagens: [{nome:'Embalagem',qtd:1,custoUnit:emb,total:emb}],
+      embalagens: usarEmb ? [{nome:'Embalagem',qtd:1,custoUnit:emb,total:emb}] : [],
       subIngredientes: subIng,
-      subEmbalagens: emb,
-      totalInsumos: subIng+emb,
+      subEmbalagens: usarEmb ? emb : 0,
+      totalInsumos: subIng + (usarEmb ? emb : 0),
       pctOp: opPct, custoOp: 0, custoProducao: 0,
       precoVenda: preco, cmv: 0, lucro: 0, margem: 0
     };
@@ -825,7 +832,9 @@ function editarProduto(){
   popularSelectCat();
   document.getElementById('p-nome').value = produtoAtual.nome;
   document.getElementById('p-cat').value = produtoAtual.cat;
-  document.getElementById('p-embal').value = produtoAtual.subEmbalagens || 3.95;
+  const temEmb = (produtoAtual.embalagens||[]).length > 0;
+  document.getElementById('p-usar-emb').checked = temEmb;
+  document.getElementById('p-embal').value = temEmb ? (produtoAtual.subEmbalagens||getEmbCusto()) : getEmbCusto();
   document.getElementById('op-pct').value = produtoAtual.pctOp || 0;
   document.getElementById('op-pct-val').textContent = (produtoAtual.pctOp||0)+'%';
   document.getElementById('p-preco').value = produtoAtual.precoVenda;
