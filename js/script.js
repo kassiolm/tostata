@@ -1351,6 +1351,35 @@ function registrarCompra(){
   const totalQtd = insumoAtual.historico.reduce((s,c)=>s+c.qtd,0);
   insumoAtual.custoMedio = +(totalCusto/totalQtd).toFixed(4);
   salvarIngredientes();
+  // Auto-update product fichas that use this insumo
+  const nomeInsumo = insumoAtual.nome;
+  const custoMedio = insumoAtual.custoMedio;
+  let atualizados = 0;
+  PRODUTOS.forEach(p => {
+    let mudou = false;
+    (p.ingredientes||[]).forEach(ing => {
+      if(ing.nome.toLowerCase() === nomeInsumo.toLowerCase()){
+        ing.custoUnit = custoMedio;
+        ing.total = +(ing.qtd * custoMedio).toFixed(2);
+        mudou = true;
+      }
+    });
+    if(insumoAtual.categoria === 'embalagens'){
+      (p.embalagens||[]).forEach(emb => {
+        if(emb.nome.toLowerCase() === nomeInsumo.toLowerCase()){
+          emb.custoUnit = custoMedio;
+          emb.total = +(emb.qtd * custoMedio).toFixed(2);
+          mudou = true;
+        }
+      });
+    }
+    if(mudou){ recalcularProduto(p); atualizados++; }
+  });
+  if(atualizados > 0){
+    salvarDados();
+    renderFichas();
+    renderDashboard();
+  }
   renderInsumos();
   abrirModalInsumo(insumoAtual.id);
   toast('Compra registrada!','ok');
