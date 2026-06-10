@@ -164,6 +164,7 @@
     overflow: hidden; box-shadow: var(--shadow); cursor: pointer; transition: all 0.15s;
   }
   .ficha-card:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,0,0,0.1); border-color: #5C6B46; }
+  .ficha-card.inativo { opacity:0.45; filter:grayscale(0.6); }
   .ficha-top { padding: 1.25rem; border-bottom: 1px solid var(--border); }
   .ficha-cat { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #7A5D3E; margin-bottom: 6px; }
   .ficha-nome { font-family: 'DM Serif Display', serif; font-size: 1.1rem; font-weight: 400; color: var(--text); line-height: 1.3; }

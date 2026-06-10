@@ -1,4 +1,5 @@
   function recalcularProduto(p){
+    if(p.ativo === undefined) p.ativo = true;
     p.subIngredientes = p.ingredientes.reduce((s,i)=>s+i.total,0);
     p.subEmbalagens = (p.embalagens||[]).reduce((s,e)=>s+e.total,0);
     p.totalInsumos = p.subIngredientes + p.subEmbalagens;
@@ -236,6 +237,7 @@
 }
 ];
 let filtroAtual = 'todos';
+let mostrarInativos = false;
 let produtoAtual = null;
 let produtoEditandoId = null;
 let editandoVendaId = null;
@@ -442,6 +444,10 @@ function setFiltro(f){
   if(el) el.classList.add('active');
   renderFichas();
 }
+function toggleMostrarInativos(){
+  mostrarInativos = !mostrarInativos;
+  renderFichas();
+}
 
 function salvarDados(){
   try{ localStorage.setItem('tostata_produtos', JSON.stringify(PRODUTOS)); }catch(e){}
@@ -579,17 +585,19 @@ function renderDashboard(){
 
 function atualizarBadgeFichas(){
   const el = document.getElementById('badge-fichas');
-  if(el) el.textContent = PRODUTOS.length;
+  if(el) el.textContent = PRODUTOS.filter(p=>p.ativo!==false).length;
 }
 
 function renderFichas(){
   const filterBar = document.getElementById('fichas-filters');
   if(filterBar){
     filterBar.innerHTML = `<button class="filter-btn ${filtroAtual==='todos'?'active':''}" id="f-todos" onclick="setFiltro('todos')">Todos</button>`
-      + CATEGORIAS.map(c => `<button class="filter-btn ${filtroAtual===c.key?'active':''}" id="f-${c.key}" onclick="setFiltro('${c.key}')">${c.label}</button>`).join('');
+      + CATEGORIAS.map(c => `<button class="filter-btn ${filtroAtual===c.key?'active':''}" id="f-${c.key}" onclick="setFiltro('${c.key}')">${c.label}</button>`).join('')
+      + `<button class="filter-btn ${mostrarInativos?'active':''}" id="f-inativos" onclick="toggleMostrarInativos()" style="margin-left:auto">👻 Inativos</button>`;
   }
   const q = (document.getElementById('search-input')?.value||'').toLowerCase();
   let lista = PRODUTOS;
+  if(!mostrarInativos) lista = lista.filter(p=>p.ativo !== false);
   if(filtroAtual!=='todos') lista = lista.filter(p=>p.cat===filtroAtual);
   if(q) lista = lista.filter(p=>p.nome.toLowerCase().includes(q));
   const grid = document.getElementById('fichas-grid');
@@ -600,10 +608,11 @@ function renderFichas(){
   }
   grid.innerHTML = lista.map(p=>{
     const mCls = p.margem>=80?'excelente':p.margem>=60?'aceitavel':'alto';
-    return `<div class="ficha-card" onclick="abrirModalProduto(${p.id})">
+    const inativo = p.ativo === false;
+    return `<div class="ficha-card${inativo?' inativo':''}" onclick="abrirModalProduto(${p.id})">
       <div class="ficha-top">
-        <div class="ficha-cat">${CAT_LABEL[p.cat]||p.cat||'Pizza'}</div>
-        <div class="ficha-nome">${p.nome}</div>
+        <div class="ficha-cat">${inativo?'🚫 ':''}${CAT_LABEL[p.cat]||p.cat||'Pizza'}</div>
+        <div class="ficha-nome">${inativo?'🚫 '+p.nome:p.nome}</div>
       </div>
       <div class="ficha-bottom">
         <div>
@@ -750,7 +759,13 @@ function abrirModalProduto(id){
   const p = PRODUTOS.find(x=>x.id===id);
   if(!p) return;
   produtoAtual = p;
-  document.getElementById('m-cat').textContent = CAT_LABEL[p.cat]||p.cat;
+  document.getElementById('m-cat').textContent = (p.ativo===false?'🚫 ':'') + (CAT_LABEL[p.cat]||p.cat);
+  document.getElementById('m-nome').textContent = p.nome;
+  const btnAtivo = document.getElementById('btn-toggle-ativo');
+  if(btnAtivo){
+    btnAtivo.textContent = p.ativo===false ? '🟢 Ativar' : '🔴 Desativar';
+    btnAtivo.style.background = p.ativo===false ? 'var(--green)' : '';
+  }
   document.getElementById('m-nome').textContent = p.nome;
   document.getElementById('m-ings').innerHTML = p.ingredientes.map(i=>`
     <tr><td>${i.nome}</td><td style="text-align:right">${i.qtd}${i.unit}</td><td style="text-align:right">${br(i.custoUnit)}</td><td style="text-align:right">${br(i.total)}</td></tr>
@@ -832,6 +847,16 @@ function excluirProduto(){
   renderFichas();
   toast(`"${produtoAtual.nome}" excluído`,'ok');
   produtoAtual = null;
+}
+
+function toggleAtivoProduto(){
+  if(!produtoAtual) return;
+  produtoAtual.ativo = produtoAtual.ativo === false ? true : false;
+  salvarDados();
+  renderFichas();
+  renderDashboard();
+  abrirModalProduto(produtoAtual.id);
+  toast(produtoAtual.ativo ? `"${produtoAtual.nome}" ativada` : `"${produtoAtual.nome}" desativada`,'ok');
 }
 
 let INGREDIENTES = [];
