@@ -308,7 +308,7 @@ function popularSelectIng(){
   const sel = document.getElementById('ing-select');
   if(!sel) return;
   sel.innerHTML = '<option value="">Selecione um insumo...</option>'
-    + INGREDIENTES.map(i => `<option value="${i.id}" data-custo="${i.custoMedio}">${i.nome}</option>`).join('')
+    + INGREDIENTES.map(i => `<option value="${i.id}" data-custo="${i.custoMedio}" data-un="${i.unidade||'un'}">${i.nome}</option>`).join('')
     + '<option value="__custom__">✏️ Digitar manualmente...</option>';
   sel.value = '';
   sel.style.display = '';
@@ -675,7 +675,8 @@ function addIng(){
   const qtd = parseFloat(document.getElementById('ing-qtd').value)||0;
   const custo = parseFloat(document.getElementById('ing-custo').value)||0;
   if(!nome) return;
-  ingPrecList.push({nome,qtd,custo,total:qtd*custo});
+  const un = (sel.style.display !== 'none' && sel.value && sel.value !== '__custom__') ? (sel.options[sel.selectedIndex]?.dataset?.un || 'g') : 'g';
+  ingPrecList.push({nome, qtd, custo, total: qtd*custo, unidade: un});
   sel.value = '';
   sel.style.display = '';
   inp.style.display = 'none';
@@ -695,7 +696,7 @@ function renderIngList(){
   el.innerHTML = ingPrecList.map((i,idx)=>`
     <div class="ing-item">
       <span style="flex:1">${i.nome}</span>
-      <span style="width:60px;text-align:right">${i.qtd}g</span>
+      <span style="width:60px;text-align:right">${i.qtd}${i.unidade||'g'}</span>
       <span style="width:80px;text-align:right">${br(i.custo)}</span>
       <span style="width:80px;text-align:right;font-weight:500">${br(i.total)}</span>
       <button class="ing-remove" onclick="remIng(${idx})">×</button>
@@ -752,8 +753,7 @@ function salvarPrec(){
   const preco = parseFloat(document.getElementById('p-preco').value)||0;
   if(ingPrecList.length===0) return toast('Adicione pelo menos um ingrediente','');
   const ingredients = ingPrecList.map(i=>{
-    const un = (!i.nome.toLowerCase().includes('massa') && !i.nome.toLowerCase().includes('caixa'))?'g':'un';
-    return {nome:i.nome,qtd:i.qtd,unit:un,custoUnit:i.custo,total:+(i.qtd*i.custo).toFixed(2)};
+    return {nome:i.nome,qtd:i.qtd,unit:i.unidade||'g',custoUnit:i.custo,total:+(i.qtd*i.custo).toFixed(2)};
   });
   const subIng = ingredients.reduce((s,i)=>s+i.total,0);
   const subEmb = embPrecList.reduce((s,e)=>s+e.total,0);
@@ -877,7 +877,7 @@ function editarProduto(){
   document.getElementById('op-pct').value = p.pctOp || 0;
   document.getElementById('op-pct-val').textContent = (p.pctOp||0)+'%';
   document.getElementById('p-preco').value = p.precoVenda;
-  ingPrecList = (p.ingredientes||[]).map(i=>({nome:i.nome,qtd:i.qtd,custo:i.custoUnit,total:i.total}));
+  ingPrecList = (p.ingredientes||[]).map(i=>({nome:i.nome,qtd:i.qtd,custo:i.custoUnit,total:i.total,unidade:i.unit||'g'}));
   embPrecList = (p.embalagens||[]).map(e=>({nome:e.nome,qtd:e.qtd,custoUnit:e.custoUnit,total:e.total}));
   produtoEditandoId = p.id;
   const btn = document.getElementById('btn-salvar-prec');
