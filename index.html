@@ -138,14 +138,15 @@
         <div class="card">
           <h3>Parâmetros</h3>
           <div class="form-group">
-            <label class="form-label">Embalagem</label>
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-              <input type="checkbox" id="p-usar-emb" checked onchange="calcPrec()" style="width:18px;height:18px;accent-color:var(--green);cursor:pointer">
-              <select class="form-input" id="p-embal-select" onchange="calcPrec()" style="flex:1;min-width:120px;font-size:13px">
-                <option value="">Nenhuma</option>
+            <label class="form-label">Embalagens</label>
+            <div class="emb-add-row" style="display:flex;gap:6px;flex-wrap:wrap">
+              <select class="form-input" id="p-embal-select" style="flex:1;min-width:120px;font-size:13px;padding:8px 12px">
+                <option value="">Selecione uma embalagem...</option>
               </select>
+              <input class="form-input" id="p-emb-qtd" type="number" value="1" min="1" step="1" style="width:60px;font-size:13px;padding:8px 12px">
+              <button class="btn-add" onclick="addEmb()">+</button>
             </div>
-            <div id="p-embal-info" style="font-size:12px;color:var(--muted);margin-top:4px;min-height:18px"></div>
+            <div id="p-emb-list" style="margin-top:6px"></div>
           </div>
           <div class="slider-row">
             <label>% Custos Operacionais <span id="op-pct-val">0%</span></label>
