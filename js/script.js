@@ -345,7 +345,7 @@ function goPage(p){
   if(p==='dashboard') renderDashboard();
   if(p==='fichas') renderFichas();
   if(p==='insumos') renderInsumos();
-  if(p==='precificador'){ produtoEditandoId = null; const btn=document.getElementById('btn-salvar-prec'); if(btn) btn.textContent='Salvar como Ficha Técnica'; const chk=document.getElementById('p-usar-emb'); if(chk) chk.checked=true; const embEl=document.getElementById('p-embal'); if(embEl&&!embEl.value) embEl.value=getEmbCusto(); popularSelectCat(); popularSelectIng(); calcPrec(); }
+  if(p==='precificador'){ produtoEditandoId = null; const btn=document.getElementById('btn-salvar-prec'); if(btn) btn.textContent='Salvar como Ficha Técnica'; const chk=document.getElementById('p-usar-emb'); if(chk) chk.checked=true; popularSelectEmbalagem(); popularSelectCat(); popularSelectIng(); calcPrec(); }
   if(p==='vendas'){ editandoVendaId = null; renderVendas(); }
 }
 
@@ -630,15 +630,36 @@ function renderFichas(){
 }
 
 function getEmbCusto(){
+  const sel = document.getElementById('p-embal-select');
+  if(!sel) return 0;
+  const opt = sel.options[sel.selectedIndex];
+  return opt && opt.value ? parseFloat(opt.dataset.custo)||0 : 0;
+}
+
+function popularSelectEmbalagem(){
+  const sel = document.getElementById('p-embal-select');
+  if(!sel) return;
   const embs = (INGREDIENTES||[]).filter(i=>i.categoria==='embalagens');
-  return embs.length ? embs[0].custoMedio : 0;
+  sel.innerHTML = '<option value="">Nenhuma</option>'
+    + embs.map(i => `<option value="${i.id}" data-custo="${i.custoMedio}" data-un="${i.unidade||'un'}">${i.nome} (R$ ${(i.custoMedio||0).toFixed(2).replace('.',',')}/${i.unidade||'un'})</option>`).join('');
+  const info = document.getElementById('p-embal-info');
+  if(info && embs.length) info.textContent = 'Selecione uma embalagem da lista de insumos';
+  else if(info) info.textContent = '⚠️ Nenhum insumo na categoria "Embalagens"';
 }
 
 function calcPrec(){
   const nome = document.getElementById('p-nome').value.trim()||'Novo Produto';
   const cat = document.getElementById('p-cat').value;
   const usarEmb = document.getElementById('p-usar-emb')?.checked;
-  const emb = (usarEmb ? parseFloat(document.getElementById('p-embal').value) : 0)||0;
+  const emb = (usarEmb ? getEmbCusto() : 0);
+  const sel = document.getElementById('p-embal-select');
+  const infoEl = document.getElementById('p-embal-info');
+  if(infoEl && sel){
+    const opt = sel.options[sel.selectedIndex];
+    if(usarEmb && opt && opt.value) infoEl.textContent = `${opt.textContent} — 1 un = ${br(emb)}`;
+    else if(usarEmb) infoEl.textContent = 'Nenhuma embalagem selecionada';
+    else infoEl.textContent = 'Embalagem desabilitada';
+  }
   const opPct = parseInt(document.getElementById('op-pct').value)||0;
   const preco = parseFloat(document.getElementById('p-preco').value)||0;
   const subIng = ingPrecList.reduce((s,i)=>s+(i.qtd||0)*(i.custo||0),0);
@@ -710,7 +731,7 @@ function salvarPrec(){
   if(!nome) return toast('Informe o nome do produto','');
   const cat = document.getElementById('p-cat').value;
   const usarEmb = document.getElementById('p-usar-emb')?.checked;
-  const emb = (usarEmb ? parseFloat(document.getElementById('p-embal').value) : 0)||0;
+  const emb = usarEmb ? getEmbCusto() : 0;
   const opPct = parseInt(document.getElementById('op-pct').value)||0;
   const preco = parseFloat(document.getElementById('p-preco').value)||0;
   if(ingPrecList.length===0) return toast('Adicione pelo menos um ingrediente','');
@@ -719,12 +740,18 @@ function salvarPrec(){
     return {nome:i.nome,qtd:i.qtd,unit:un,custoUnit:i.custo,total:+(i.qtd*i.custo).toFixed(2)};
   });
   const subIng = ingredients.reduce((s,i)=>s+i.total,0);
+  let embNome = 'Embalagem';
+  const selEmb = document.getElementById('p-embal-select');
+  if(selEmb){
+    const opt = selEmb.options[selEmb.selectedIndex];
+    if(opt && opt.value) embNome = opt.textContent;
+  }
   const editando = produtoEditandoId && PRODUTOS.some(p=>p.id===produtoEditandoId);
   if(editando){
     const prod = PRODUTOS.find(p=>p.id===produtoEditandoId);
     prod.nome = nome; prod.cat = cat;
     prod.ingredientes = ingredients;
-    prod.embalagens = usarEmb ? [{nome:'Embalagem',qtd:1,custoUnit:emb,total:emb}] : [];
+    prod.embalagens = usarEmb ? [{nome:embNome,qtd:1,custoUnit:emb,total:emb}] : [];
     prod.subIngredientes = subIng;
     prod.subEmbalagens = usarEmb ? emb : 0;
     prod.totalInsumos = subIng + (usarEmb ? emb : 0);
@@ -737,7 +764,7 @@ function salvarPrec(){
     const prod = {
       id, nome, cat,
       ingredientes: ingredients,
-      embalagens: usarEmb ? [{nome:'Embalagem',qtd:1,custoUnit:emb,total:emb}] : [],
+      embalagens: usarEmb ? [{nome:embNome,qtd:1,custoUnit:emb,total:emb}] : [],
       subIngredientes: subIng,
       subEmbalagens: usarEmb ? emb : 0,
       totalInsumos: subIng + (usarEmb ? emb : 0),
@@ -834,7 +861,15 @@ function editarProduto(){
   document.getElementById('p-cat').value = produtoAtual.cat;
   const temEmb = (produtoAtual.embalagens||[]).length > 0;
   document.getElementById('p-usar-emb').checked = temEmb;
-  document.getElementById('p-embal').value = temEmb ? (produtoAtual.subEmbalagens||getEmbCusto()) : getEmbCusto();
+  const selEmb = document.getElementById('p-embal-select');
+  if(selEmb){
+    const embNome = temEmb ? produtoAtual.embalagens[0].nome : '';
+    let found = false;
+    for(let i=0;i<selEmb.options.length;i++){
+      if(selEmb.options[i].textContent.trim().startsWith(embNome)){ selEmb.selectedIndex=i; found=true; break; }
+    }
+    if(!found) selEmb.selectedIndex = 0;
+  }
   document.getElementById('op-pct').value = produtoAtual.pctOp || 0;
   document.getElementById('op-pct-val').textContent = (produtoAtual.pctOp||0)+'%';
   document.getElementById('p-preco').value = produtoAtual.precoVenda;
