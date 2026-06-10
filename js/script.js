@@ -1590,6 +1590,7 @@ function renderVendas(){
   document.getElementById('graf-semana-de').value = wk;
   document.getElementById('graf-semana-ate').value = wk;
   renderKPIVendas();
+  renderKPIVendasCategoria();
   renderTabelaVendas();
   renderGraficoSemanal();
 }
@@ -1608,6 +1609,29 @@ function renderKPIVendas(){
     <div class="kpi yellow"><div class="kpi-label">Comissões</div><div class="kpi-value">${br(totalCom)}</div></div>
     <div class="kpi green"><div class="kpi-label">Retorno Líquido</div><div class="kpi-value">${br(totalRet)}</div></div>
   `;
+}
+function renderKPIVendasCategoria(){
+  const el = document.getElementById('vendas-kpi-cat');
+  if(!el) return;
+  const cats = {};
+  VENDAS.forEach(v => {
+    const item = (v.itens||[])[0];
+    if(!item) return;
+    const prod = PRODUTOS.find(p => p.id === item.produtoId);
+    const cat = prod ? (prod.cat || 'outros') : 'outros';
+    if(!cats[cat]) cats[cat] = {qtd:0, rec:0, cst:0, ret:0};
+    cats[cat].qtd += item.qtd || 0;
+    cats[cat].rec += v.receitaBruta || 0;
+    cats[cat].cst += v.custoTotal || 0;
+    cats[cat].ret += v.retornoLiquido || 0;
+  });
+  const labels = Object.keys(cats);
+  if(!labels.length){ el.innerHTML = ''; el.style.display = 'none'; return; }
+  el.style.display = '';
+  el.innerHTML = labels.map(cat => {
+    const c = cats[cat];
+    return `<div class="kpi"><div class="kpi-label">${CAT_LABEL[cat]||cat}</div><div class="kpi-value">${br(c.rec)}</div><div style="font-size:11px;color:var(--muted)">${c.qtd} un · Ret: ${br(c.ret)}</div></div>`;
+  }).join('');
 }
 function registrarVenda(){
   const pid = document.getElementById('vf-produto').value;
