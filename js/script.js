@@ -744,7 +744,7 @@ function salvarPrec(){
   const selEmb = document.getElementById('p-embal-select');
   if(selEmb){
     const opt = selEmb.options[selEmb.selectedIndex];
-    if(opt && opt.value) embNome = opt.textContent;
+    if(opt && opt.value) embNome = (opt.textContent||'').split(/ \(R\$/)[0].trim();
   }
   const editando = produtoEditandoId && PRODUTOS.some(p=>p.id===produtoEditandoId);
   if(editando){
@@ -863,7 +863,7 @@ function editarProduto(){
   document.getElementById('p-usar-emb').checked = temEmb;
   const selEmb = document.getElementById('p-embal-select');
   if(selEmb){
-    const embNome = temEmb ? produtoAtual.embalagens[0].nome : '';
+    const embNome = temEmb ? (produtoAtual.embalagens[0].nome||'').split(' (R$')[0].trim() : '';
     let found = false;
     for(let i=0;i<selEmb.options.length;i++){
       if(selEmb.options[i].textContent.trim().startsWith(embNome)){ selEmb.selectedIndex=i; found=true; break; }
@@ -1214,13 +1214,14 @@ function registrarCompra(){
   if(!insumoAtual) return;
   const forn = document.getElementById('compra-forn').value.trim()||'Avulso';
   const qtd = parseFloat(document.getElementById('compra-qtd').value);
-  const custoUnit = parseFloat(document.getElementById('compra-unit').value);
+  const totalPago = parseFloat(document.getElementById('compra-total').value);
   const data = document.getElementById('compra-data').value || new Date().toISOString().slice(0,10);
-  if(isNaN(qtd)||qtd<=0||isNaN(custoUnit)||custoUnit<=0){
-    toast('Preencha quantidade e custo unitário válidos','');
+  if(isNaN(qtd)||qtd<=0||isNaN(totalPago)||totalPago<=0){
+    toast('Preencha quantidade e valor total válidos','');
     return;
   }
-  insumoAtual.historico.push({data, fornecedor:forn, qtd, custoUnit, total:+(qtd*custoUnit).toFixed(2)});
+  const custoUnit = +(totalPago / qtd).toFixed(4);
+  insumoAtual.historico.push({data, fornecedor:forn, qtd, custoUnit, total:+totalPago.toFixed(2)});
   recalcularEstoque(insumoAtual);
   // Update average cost
   const totalCusto = insumoAtual.historico.reduce((s,c)=>s+c.custoUnit*c.qtd,0);
