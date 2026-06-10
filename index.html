@@ -340,21 +340,50 @@
 <div class="modal-overlay" id="modal-insumo">
   <div class="modal" style="width:750px">
     <div class="modal-header">
-      <div>
-        <div class="modal-cat" id="mi-cat"></div>
-        <div class="modal-nome" id="mi-nome"></div>
-      </div>
+      <div class="modal-section-title" style="margin:0">Insumo</div>
       <button class="modal-close" onclick="if(insumoModo==='form')cancelarFormInsumo();else fecharModalInsumo()">×</button>
     </div>
     <div class="modal-body">
 
-      <!-- VIEW MODE -->
+      <!-- VIEW MODE (editable inline) -->
       <div id="mi-view">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+          <select id="e-cat" class="form-input" style="font-size:11px;width:auto;padding:2px 6px">
+            <option value="massas">Massas</option>
+            <option value="queijos">Queijos</option>
+            <option value="embutidos">Embutidos</option>
+            <option value="vegetais">Vegetais</option>
+            <option value="molhos">Molhos</option>
+            <option value="temperos">Temperos</option>
+            <option value="doces">Doces</option>
+            <option value="embalagens">Embalagens</option>
+            <option value="outros">Outros</option>
+          </select>
+          <input id="e-nome" class="form-input" style="flex:1;min-width:150px;font-weight:700;font-size:1.05rem" placeholder="Nome do insumo">
+        </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1rem">
-          <div class="resumo-item"><div class="resumo-label">Estoque Atual</div><div class="resumo-value" id="mi-estoque" style="font-size:1.4rem"></div></div>
-          <div class="resumo-item"><div class="resumo-label">Estoque Mínimo</div><div class="resumo-value" id="mi-min" style="font-size:1.4rem"></div></div>
-          <div class="resumo-item"><div class="resumo-label">Custo Médio (R$)</div><div class="resumo-value" id="mi-custo">—</div></div>
-          <div class="resumo-item highlight"><div class="resumo-label">Valor em Estoque</div><div class="resumo-value" id="mi-valor">—</div></div>
+          <div>
+            <div class="resumo-label">Estoque Atual</div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <input id="e-estoque" type="number" step="0.001" class="form-input" style="width:90px;font-size:1.2rem;font-weight:700">
+              <select id="e-un" class="form-input" style="width:auto;padding:2px 6px">
+                <option value="g">g</option><option value="un">un</option><option value="ml">ml</option>
+                <option value="kg">kg</option><option value="L">L</option><option value="cx">cx</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <div class="resumo-label">Estoque Mínimo</div>
+            <input id="e-min" type="number" step="0.001" class="form-input" style="width:90px;font-size:1.2rem;font-weight:700">
+          </div>
+          <div>
+            <div class="resumo-label">Custo Médio (R$)</div>
+            <input id="e-custo" type="number" step="0.0001" class="form-input" style="width:110px;font-size:1.05rem;font-weight:700">
+          </div>
+          <div class="resumo-item highlight">
+            <div class="resumo-label">Valor em Estoque</div>
+            <div class="resumo-value" id="mi-valor">—</div>
+          </div>
         </div>
         <div style="margin-bottom:1rem">
           <div class="modal-section-title">Usado nos produtos</div>
@@ -393,7 +422,7 @@
         </table>
         </div>
         <div style="display:flex;gap:8px;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)">
-          <button class="btn-primary" style="flex:1;background:var(--text)" onclick="editarInsumo()">✏️ Editar</button>
+          <button class="btn-primary" style="flex:1" onclick="salvarInsumoView()">💾 Salvar Alterações</button>
           <button class="btn-primary" style="flex:1;background:var(--red)" onclick="excluirInsumo()">🗑️ Excluir</button>
         </div>
       </div>

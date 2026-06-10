@@ -1130,12 +1130,12 @@ function mostrarViewInsumo(ing){
   document.getElementById('mi-view').style.display = 'block';
   document.getElementById('mi-form').style.display = 'none';
   insumoAtual = ing;
-  document.getElementById('mi-cat').textContent = CAT_LABEL[ing.categoria]||ing.categoria;
-  document.getElementById('mi-nome').textContent = ing.nome;
-  document.getElementById('mi-estoque').textContent = (typeof ing.estoqueAtual==='number'?ing.estoqueAtual.toFixed(ing.unidade==='un'?0:1):'—')+' '+ing.unidade;
-  document.getElementById('mi-estoque').style.color = statusEstoque(ing).cls==='critico'?'var(--red)':statusEstoque(ing).cls==='baixo'?'var(--yellow)':'var(--green)';
-  document.getElementById('mi-min').textContent = (typeof ing.estoqueMinimo==='number'?ing.estoqueMinimo.toFixed(ing.unidade==='un'?0:1):'—')+' '+ing.unidade;
-  document.getElementById('mi-custo').textContent = br(ing.custoMedio);
+  document.getElementById('e-cat').value = ing.categoria||'outros';
+  document.getElementById('e-nome').value = ing.nome||'';
+  document.getElementById('e-estoque').value = ing.estoqueAtual||0;
+  document.getElementById('e-un').value = ing.unidade||'un';
+  document.getElementById('e-min').value = ing.estoqueMinimo||0;
+  document.getElementById('e-custo').value = ing.custoMedio||0;
   document.getElementById('mi-valor').textContent = br((ing.estoqueAtual||0)*ing.custoMedio);
   const usado = getIngUsadoEm(ing.id);
   document.getElementById('mi-usado').innerHTML = usado.length ? usado.map(n=>`<span>${n}</span>`).join('') : '<span style="color:var(--muted)">Nenhum produto utiliza este insumo</span>';
@@ -1151,7 +1151,7 @@ function mostrarViewInsumo(ing){
   document.getElementById('compra-form').style.display='none';
   document.getElementById('compra-forn').value='';
   document.getElementById('compra-qtd').value='';
-  document.getElementById('compra-unit').value='';
+  document.getElementById('compra-total').value='';
   document.getElementById('compra-data').value=new Date().toISOString().slice(0,10);
   document.getElementById('modal-insumo').classList.add('open');
   lockScroll(true);
@@ -1161,31 +1161,22 @@ function mostrarFormInsumo(ing){
   insumoModo = 'form';
   document.getElementById('mi-view').style.display = 'none';
   document.getElementById('mi-form').style.display = 'block';
+  insumoEditId = ing ? ing.id : null;
   if(ing){
-    insumoEditId = ing.id;
-    document.getElementById('mi-cat').textContent = 'Editando';
-    document.getElementById('mi-nome').textContent = ing.nome;
     document.getElementById('f-nome').value = ing.nome;
     document.getElementById('f-cat').value = ing.categoria;
     document.getElementById('f-un').value = ing.unidade;
     document.getElementById('f-custo').value = ing.custoMedio;
     document.getElementById('f-estoque').value = ing.estoqueAtual;
     document.getElementById('f-min').value = ing.estoqueMinimo;
-    document.getElementById('f-custo-group').style.display = 'block';
-    document.getElementById('f-estoque-group').style.display = 'block';
     document.getElementById('mi-salvar-btn').textContent = '💾 Atualizar';
   } else {
-    insumoEditId = null;
-    document.getElementById('mi-cat').textContent = 'Novo';
-    document.getElementById('mi-nome').textContent = 'Cadastro de Insumo';
     document.getElementById('f-nome').value = '';
     document.getElementById('f-cat').value = 'outros';
     document.getElementById('f-un').value = 'g';
     document.getElementById('f-custo').value = '0';
     document.getElementById('f-estoque').value = '0';
     document.getElementById('f-min').value = '0';
-    document.getElementById('f-custo-group').style.display = 'block';
-    document.getElementById('f-estoque-group').style.display = 'block';
     document.getElementById('mi-salvar-btn').textContent = '💾 Salvar';
   }
   document.getElementById('modal-insumo').classList.add('open');
@@ -1233,9 +1224,28 @@ function registrarCompra(){
   toast('Compra registrada!','ok');
 }
 
-function editarInsumo(){
+function salvarInsumoView(){
   if(!insumoAtual) return;
-  mostrarFormInsumo(insumoAtual);
+  const nome = document.getElementById('e-nome').value.trim();
+  const cat = document.getElementById('e-cat').value;
+  const un = document.getElementById('e-un').value;
+  const estoque = parseFloat(document.getElementById('e-estoque').value)||0;
+  const minimo = parseFloat(document.getElementById('e-min').value)||0;
+  const custo = parseFloat(document.getElementById('e-custo').value)||0;
+  if(!nome) return toast('Informe o nome do insumo','');
+  if(!un) return toast('Informe a unidade de medida','');
+  const ing = INGREDIENTES.find(x=>x.id===insumoAtual.id);
+  if(!ing) return;
+  ing.nome = nome;
+  ing.categoria = cat;
+  ing.unidade = un;
+  ing.estoqueAtual = estoque;
+  ing.estoqueMinimo = minimo;
+  ing.custoMedio = custo;
+  salvarIngredientes();
+  renderInsumos();
+  mostrarViewInsumo(ing);
+  toast(`"${nome}" atualizado!`,'ok');
 }
 
 function salvarFormInsumo(){
