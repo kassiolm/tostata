@@ -867,19 +867,19 @@ function atualizarPreco(){
 
 function editarProduto(){
   if(!produtoAtual) return;
-  const id = produtoAtual.id;
+  const p = produtoAtual;
   fecharModalBtn();
   goPage('precificador');
   popularSelectCat();
   popularSelectEmbalagem();
-  document.getElementById('p-nome').value = produtoAtual.nome;
-  document.getElementById('p-cat').value = produtoAtual.cat;
-  document.getElementById('op-pct').value = produtoAtual.pctOp || 0;
-  document.getElementById('op-pct-val').textContent = (produtoAtual.pctOp||0)+'%';
-  document.getElementById('p-preco').value = produtoAtual.precoVenda;
-  ingPrecList = (produtoAtual.ingredientes||[]).map(i=>({nome:i.nome,qtd:i.qtd,custo:i.custoUnit,total:i.total}));
-  embPrecList = (produtoAtual.embalagens||[]).map(e=>({nome:e.nome,qtd:e.qtd,custoUnit:e.custoUnit,total:e.total}));
-  produtoEditandoId = id;
+  document.getElementById('p-nome').value = p.nome;
+  document.getElementById('p-cat').value = p.cat;
+  document.getElementById('op-pct').value = p.pctOp || 0;
+  document.getElementById('op-pct-val').textContent = (p.pctOp||0)+'%';
+  document.getElementById('p-preco').value = p.precoVenda;
+  ingPrecList = (p.ingredientes||[]).map(i=>({nome:i.nome,qtd:i.qtd,custo:i.custoUnit,total:i.total}));
+  embPrecList = (p.embalagens||[]).map(e=>({nome:e.nome,qtd:e.qtd,custoUnit:e.custoUnit,total:e.total}));
+  produtoEditandoId = p.id;
   const btn = document.getElementById('btn-salvar-prec');
   if(btn) btn.textContent = '💾 Atualizar Ficha';
   calcPrec();
