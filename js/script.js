@@ -868,6 +868,8 @@ function atualizarPreco(){
 function editarProduto(){
   if(!produtoAtual) return;
   const id = produtoAtual.id;
+  fecharModalBtn();
+  goPage('precificador');
   popularSelectCat();
   popularSelectEmbalagem();
   document.getElementById('p-nome').value = produtoAtual.nome;
@@ -877,8 +879,6 @@ function editarProduto(){
   document.getElementById('p-preco').value = produtoAtual.precoVenda;
   ingPrecList = (produtoAtual.ingredientes||[]).map(i=>({nome:i.nome,qtd:i.qtd,custo:i.custoUnit,total:i.total}));
   embPrecList = (produtoAtual.embalagens||[]).map(e=>({nome:e.nome,qtd:e.qtd,custoUnit:e.custoUnit,total:e.total}));
-  fecharModalBtn();
-  goPage('precificador');
   produtoEditandoId = id;
   const btn = document.getElementById('btn-salvar-prec');
   if(btn) btn.textContent = '💾 Atualizar Ficha';
