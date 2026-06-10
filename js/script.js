@@ -546,10 +546,11 @@ async function carregarSupabase(){
 }
 
 function renderDashboard(){
-  const total = PRODUTOS.length;
-  const avgMargem = total ? PRODUTOS.reduce((s,p)=>s+p.margem,0)/total : 0;
-  const avgCmv = total ? PRODUTOS.reduce((s,p)=>s+p.cmv,0)/total : 0;
-  const lucroTotal = PRODUTOS.reduce((s,p)=>s+p.lucro,0);
+  const ativos = PRODUTOS.filter(p=>p.ativo!==false);
+  const total = ativos.length;
+  const avgMargem = total ? ativos.reduce((s,p)=>s+p.margem,0)/total : 0;
+  const avgCmv = total ? ativos.reduce((s,p)=>s+p.cmv,0)/total : 0;
+  const lucroTotal = ativos.reduce((s,p)=>s+p.lucro,0);
   const cmvClass = avgCmv<25?'green':avgCmv<40?'yellow':'';
   document.getElementById('kpi-grid').innerHTML = `
     <div class="kpi accent"><div class="kpi-label">Total de Produtos</div><div class="kpi-value">${total}</div></div>
@@ -557,7 +558,7 @@ function renderDashboard(){
     <div class="kpi ${cmvClass?'kpi '+cmvClass:'kpi'}"><div class="kpi-label">CMV Médio</div><div class="kpi-value">${avgCmv.toFixed(1)}%</div></div>
     <div class="kpi"><div class="kpi-label">Lucro Total</div><div class="kpi-value">${br(lucroTotal)}</div></div>
   `;
-  const sorted = [...PRODUTOS].sort((a,b)=>b.margem-a.margem);
+  const sorted = [...ativos].sort((a,b)=>b.margem-a.margem);
   document.getElementById('rank-margem').innerHTML = sorted.map((p,i)=>`
     <div class="rank-item" onclick="abrirModalProduto(${p.id})" style="cursor:pointer">
       <div class="rank-num">${i+1}</div>
@@ -568,7 +569,7 @@ function renderDashboard(){
       <div class="rank-pct">${p.margem.toFixed(1)}%</div>
     </div>
   `).join('');
-  document.getElementById('status-cmv').innerHTML = PRODUTOS.map(p=>{
+  document.getElementById('status-cmv').innerHTML = ativos.map(p=>{
     const cmvCls = p.cmv<25?'excelente':p.cmv<40?'aceitavel':'alto';
     return `<div class="status-item" onclick="abrirModalProduto(${p.id})" style="cursor:pointer">
       <span class="status-nome">${p.nome}</span>
