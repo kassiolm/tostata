@@ -907,6 +907,135 @@ function toggleAtivoProduto(){
   toast(produtoAtual.ativo ? `"${produtoAtual.nome}" ativada` : `"${produtoAtual.nome}" desativada`,'ok');
 }
 
+function abrirModalMassUpdate(){
+  const selCat = document.getElementById('mass-cat');
+  if(selCat) selCat.innerHTML = '<option value="">Todas as categorias</option>' + CATEGORIAS.map(c => `<option value="${c.key}">${c.label}</option>`).join('');
+  const selEmb = document.getElementById('mass-emb-select');
+  if(selEmb){
+    const embs = (INGREDIENTES||[]).filter(i=>i.categoria==='embalagens');
+    selEmb.innerHTML = '<option value="">Selecione...</option>' + embs.map(i => `<option value="${i.id}" data-custo="${i.custoMedio}">${i.nome}</option>`).join('');
+  }
+  document.getElementById('modal-mass-update').classList.add('open');
+  lockScroll(true);
+}
+
+function fecharModalMassUpdate(){
+  document.getElementById('modal-mass-update').classList.remove('open');
+  lockScroll(false);
+}
+
+function getProdutosFiltrados(cat){
+  return cat ? PRODUTOS.filter(p => p.cat === cat) : PRODUTOS;
+}
+
+function massRecalcularIngredientes(){
+  const cat = document.getElementById('mass-cat').value;
+  const produtos = getProdutosFiltrados(cat);
+  if(!produtos.length) return toast('Nenhum produto encontrado','');
+  let count = 0;
+  produtos.forEach(p => {
+    (p.ingredientes||[]).forEach(ing => {
+      const insumo = INGREDIENTES.find(i => i.nome.toLowerCase() === ing.nome.toLowerCase());
+      if(insumo && insumo.custoMedio !== undefined){
+        ing.custoUnit = insumo.custoMedio;
+        ing.total = +(ing.qtd * insumo.custoMedio).toFixed(2);
+        count++;
+      }
+    });
+    recalcularProduto(p);
+  });
+  salvarDados();
+  renderFichas();
+  renderDashboard();
+  fecharModalMassUpdate();
+  toast(`${count} ingredientes atualizados em ${produtos.length} produtos`,'ok');
+}
+
+function massRecalcularEmbalagens(){
+  const cat = document.getElementById('mass-cat').value;
+  const produtos = getProdutosFiltrados(cat);
+  if(!produtos.length) return toast('Nenhum produto encontrado','');
+  let count = 0;
+  const embs = (INGREDIENTES||[]).filter(i=>i.categoria==='embalagens');
+  produtos.forEach(p => {
+    (p.embalagens||[]).forEach(emb => {
+      const insumo = embs.find(i => i.nome.toLowerCase() === emb.nome.toLowerCase());
+      if(insumo && insumo.custoMedio !== undefined){
+        emb.custoUnit = insumo.custoMedio;
+        emb.total = +(emb.qtd * insumo.custoMedio).toFixed(2);
+        count++;
+      }
+    });
+    recalcularProduto(p);
+  });
+  salvarDados();
+  renderFichas();
+  renderDashboard();
+  fecharModalMassUpdate();
+  toast(`${count} embalagens atualizadas em ${produtos.length} produtos`,'ok');
+}
+
+function massSetPctOp(){
+  const cat = document.getElementById('mass-cat').value;
+  const pct = parseInt(document.getElementById('mass-pct-op').value);
+  if(isNaN(pct) || pct < 0 || pct > 100) return toast('Informe um % entre 0 e 100','');
+  const produtos = getProdutosFiltrados(cat);
+  if(!produtos.length) return toast('Nenhum produto encontrado','');
+  produtos.forEach(p => { p.pctOp = pct; recalcularProduto(p); });
+  salvarDados();
+  renderFichas();
+  renderDashboard();
+  fecharModalMassUpdate();
+  toast(`pctOp definido como ${pct}% em ${produtos.length} produtos`,'ok');
+}
+
+function massAjustarPreco(){
+  const cat = document.getElementById('mass-cat').value;
+  const pct = parseFloat(document.getElementById('mass-ajuste-preco').value);
+  if(isNaN(pct) || !pct) return toast('Informe um percentual de ajuste (ex: 10 para +10%, -5 para -5%)','');
+  const produtos = getProdutosFiltrados(cat);
+  if(!produtos.length) return toast('Nenhum produto encontrado','');
+  produtos.forEach(p => {
+    p.precoVenda = +(p.precoVenda * (1 + pct/100)).toFixed(2);
+    recalcularProduto(p);
+  });
+  salvarDados();
+  renderFichas();
+  renderDashboard();
+  fecharModalMassUpdate();
+  toast(`Preço ajustado em ${pct >= 0 ? '+' : ''}${pct}% em ${produtos.length} produtos`,'ok');
+}
+
+function massAddEmbalagem(){
+  const cat = document.getElementById('mass-cat').value;
+  const sel = document.getElementById('mass-emb-select');
+  if(!sel || !sel.value) return toast('Selecione uma embalagem','');
+  const opt = sel.options[sel.selectedIndex];
+  const nome = opt.textContent;
+  const custoUnit = parseFloat(opt.dataset.custo)||0;
+  const qtd = parseFloat(document.getElementById('mass-emb-qtd').value)||1;
+  const substituir = document.getElementById('mass-emb-substituir').checked;
+  const produtos = getProdutosFiltrados(cat);
+  if(!produtos.length) return toast('Nenhum produto encontrado','');
+  const total = +(qtd * custoUnit).toFixed(2);
+  produtos.forEach(p => {
+    if(substituir){
+      const idx = (p.embalagens||[]).findIndex(e => e.nome.toLowerCase() === nome.toLowerCase());
+      if(idx >= 0) p.embalagens[idx] = {nome, qtd, custoUnit, total};
+      else { if(!p.embalagens) p.embalagens = []; p.embalagens.push({nome, qtd, custoUnit, total}); }
+    } else {
+      if(!p.embalagens) p.embalagens = [];
+      p.embalagens.push({nome, qtd, custoUnit, total});
+    }
+    recalcularProduto(p);
+  });
+  salvarDados();
+  renderFichas();
+  renderDashboard();
+  fecharModalMassUpdate();
+  toast(`Embalagem "${nome}" ${substituir ? 'substituída/adic' : 'adic'}ionada em ${produtos.length} produtos`,'ok');
+}
+
 let INGREDIENTES = [];
 let VENDEDORES = [];
 let VENDAS = [];
